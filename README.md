@@ -1,163 +1,179 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
 
--- Estado
-local speedActive = false
-local jumpActive = false
-local speedValue = 50 -- valor inicial
-local jumpValue = 100 -- valor inicial
+-- Configurações iniciais
+local speedEnabled = false
+local jumpEnabled = false
+local walkSpeedNormal = 16
+local jumpPowerNormal = 50
+local walkSpeedCurrent = walkSpeedNormal
+local jumpPowerBoost = 150
 
--- Função pra comprar item (invoca o Remote)
-local function buyItem(name)
-    local success, err = pcall(function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Packages")
-            :WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy")
-            :InvokeServer(name)
-    end)
-    if not success then warn("Falha ao comprar:", err) end
-end
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
--- Atualiza valores do Humanoid se ativo
-local function updateSpeed()
-    if speedActive and player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = speedValue
-    end
-end
+-- Atualiza humanoid se personagem renascer
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = character:WaitForChild("Humanoid")
+    humanoid.WalkSpeed = speedEnabled and walkSpeedCurrent or walkSpeedNormal
+    humanoid.JumpPower = jumpEnabled and jumpPowerBoost or jumpPowerNormal
+end)
 
-local function updateJump()
-    if jumpActive and player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.JumpPower = jumpValue
-    end
-end
+-- Criar GUI
 
--- GUI básica
-local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-screenGui.Name = "GP7MenuGui"
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GP7Menu"
+screenGui.Parent = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 260, 0, 150)
-frame.Position = UDim2.new(0, 50, 0, 50)
-frame.BackgroundColor3 = Color3.fromRGB(25, 0, 0)
-frame.BorderColor3 = Color3.fromRGB(150, 0, 0)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 220, 0, 170)
+frame.Position = UDim2.new(0, 10, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
 frame.Active = true
 frame.Draggable = true
 
+-- Título
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundTransparency = 1
 title.Text = "GP7 MENU"
-title.TextColor3 = Color3.new(1, 0, 0)
 title.Font = Enum.Font.GothamBold
-title.TextScaled = true
+title.TextSize = 22
+title.TextColor3 = Color3.fromRGB(255, 50, 50)
+title.TextStrokeColor3 = Color3.new(0,0,0)
+title.TextStrokeTransparency = 0.5
+title.TextWrapped = true
 
-local statusLabel = Instance.new("TextLabel", frame)
-statusLabel.Size = UDim2.new(1, -20, 0, 25)
-statusLabel.Position = UDim2.new(0, 10, 0, 30)
-statusLabel.BackgroundTransparency = 1
-statusLabel.TextColor3 = Color3.new(1, 1, 1)
-statusLabel.Text = "Status: Desativado"
-statusLabel.TextScaled = true
-statusLabel.Font = Enum.Font.GothamBold
+-- Speed Hack Label
+local speedLabel = Instance.new("TextLabel", frame)
+speedLabel.Size = UDim2.new(1, -20, 0, 25)
+speedLabel.Position = UDim2.new(0, 10, 0, 40)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Speed Hack: OFF"
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.TextSize = 18
+speedLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 
--- Função para criar botão
-local function createButton(parent, text, posY)
-    local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0.4, 0, 0, 30)
-    btn.Position = UDim2.new(0.05, 0, 0, posY)
-    btn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextScaled = true
-    btn.Text = text
-    return btn
-end
+-- Speed Hack Slider
+local sliderFrame = Instance.new("Frame", frame)
+sliderFrame.Size = UDim2.new(0, 200, 0, 20)
+sliderFrame.Position = UDim2.new(0, 10, 0, 70)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+sliderFrame.BorderSizePixel = 0
 
--- Função para criar slider (basicão)
-local function createSlider(parent, posY, min, max, initial, labelText)
-    local label = Instance.new("TextLabel", parent)
-    label.Size = UDim2.new(0.9, 0, 0, 20)
-    label.Position = UDim2.new(0.05, 0, 0, posY)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.new(1,1,1)
-    label.Font = Enum.Font.GothamBold
-    label.TextScaled = true
-    label.Text = labelText .. ": " .. tostring(initial)
-    
-    local box = Instance.new("TextBox", parent)
-    box.Size = UDim2.new(0.9, 0, 0, 20)
-    box.Position = UDim2.new(0.05, 0, 0, posY + 20)
-    box.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-    box.TextColor3 = Color3.new(1,1,1)
-    box.Font = Enum.Font.GothamBold
-    box.TextScaled = true
-    box.Text = tostring(initial)
-    
-    return label, box
-end
+local sliderBar = Instance.new("Frame", sliderFrame)
+sliderBar.Size = UDim2.new(0.3, 0, 1, 0) -- inicial 30% (walkSpeedCurrent=walkSpeedNormal)
+sliderBar.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+sliderBar.BorderSizePixel = 0
 
--- Criar botões e sliders
-local speedBtn = createButton(frame, "Ativar Speed Hack", 60)
-local jumpBtn = createButton(frame, "Ativar Super Pulo", 100)
+local dragging = false
 
-local speedLabel, speedSlider = createSlider(frame, 140, 16, 100, speedValue, "Velocidade")
-local jumpLabel, jumpSlider = createSlider(frame, 180, 50, 200, jumpValue, "Pulo")
-
--- Eventos sliders
-speedSlider.FocusLost:Connect(function()
-    local val = tonumber(speedSlider.Text)
-    if val and val >= 16 and val <= 100 then
-        speedValue = val
-        speedLabel.Text = "Velocidade: " .. speedValue
-        updateSpeed()
-    else
-        speedSlider.Text = tostring(speedValue)
+sliderBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
     end
 end)
 
-jumpSlider.FocusLost:Connect(function()
-    local val = tonumber(jumpSlider.Text)
-    if val and val >= 50 and val <= 200 then
-        jumpValue = val
-        jumpLabel.Text = "Pulo: " .. jumpValue
-        updateJump()
-    else
-        jumpSlider.Text = tostring(jumpValue)
+sliderBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
     end
 end)
 
--- Eventos botões
-speedBtn.MouseButton1Click:Connect(function()
-    if not speedActive then
-        buyItem("Speed Coil")
-        wait(1)
-        speedActive = true
-        speedBtn.Text = "Desativar Speed Hack"
-        statusLabel.Text = "Speed Hack ativado"
-        updateSpeed()
-    else
-        speedActive = false
-        speedBtn.Text = "Ativar Speed Hack"
-        statusLabel.Text = "Speed Hack desativado"
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 16
+sliderFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local relativeX = math.clamp(input.Position.X - sliderFrame.AbsolutePosition.X, 0, sliderFrame.AbsoluteSize.X)
+        local percent = relativeX / sliderFrame.AbsoluteSize.X
+        sliderBar.Size = UDim2.new(percent, 0, 1, 0)
+        walkSpeedCurrent = math.floor(16 + (84 * percent)) -- speed entre 16 e 100
+        if speedEnabled then
+            humanoid.WalkSpeed = walkSpeedCurrent
         end
     end
 end)
+
+-- Botão Pulo Infinito
+local jumpBtn = Instance.new("TextButton", frame)
+jumpBtn.Size = UDim2.new(0, 200, 0, 40)
+jumpBtn.Position = UDim2.new(0, 10, 0, 100)
+jumpBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+jumpBtn.TextColor3 = Color3.new(1,1,1)
+jumpBtn.Font = Enum.Font.GothamBold
+jumpBtn.TextSize = 18
+jumpBtn.Text = "Ativar Pulo Infinito"
 
 jumpBtn.MouseButton1Click:Connect(function()
-    if not jumpActive then
-        buyItem("Gravity Coil")
-        wait(1)
-        jumpActive = true
-        jumpBtn.Text = "Desativar Super Pulo"
-        statusLabel.Text = "Super Pulo ativado"
-        updateJump()
+    jumpEnabled = not jumpEnabled
+    if jumpEnabled then
+        jumpBtn.Text = "Desativar Pulo Infinito"
+        humanoid.JumpPower = jumpPowerBoost
     else
-        jumpActive = false
-        jumpBtn.Text = "Ativar Super Pulo"
-        statusLabel.Text = "Super Pulo desativado"
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = 50
-        end
+        jumpBtn.Text = "Ativar Pulo Infinito"
+        humanoid.JumpPower = jumpPowerNormal
     end
+end)
+
+-- Botão ligar/desligar Speed Hack
+local speedToggleBtn = Instance.new("TextButton", frame)
+speedToggleBtn.Size = UDim2.new(0, 200, 0, 40)
+speedToggleBtn.Position = UDim2.new(0, 10, 0, 140)
+speedToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+speedToggleBtn.TextColor3 = Color3.new(1,1,1)
+speedToggleBtn.Font = Enum.Font.GothamBold
+speedToggleBtn.TextSize = 18
+speedToggleBtn.Text = "Ativar Speed Hack"
+
+speedToggleBtn.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    if speedEnabled then
+        speedToggleBtn.Text = "Desativar Speed Hack"
+        speedLabel.Text = ("Speed Hack: ON (%d)"):format(walkSpeedCurrent)
+        humanoid.WalkSpeed = walkSpeedCurrent
+    else
+        speedToggleBtn.Text = "Ativar Speed Hack"
+        speedLabel.Text = "Speed Hack: OFF"
+        humanoid.WalkSpeed = walkSpeedNormal
+    end
+end)
+
+-- Botão Minimizar
+local minimizeBtn = Instance.new("TextButton", screenGui)
+minimizeBtn.Size = UDim2.new(0, 40, 0, 40)
+minimizeBtn.Position = UDim2.new(0, 10, 0.3, 0)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextSize = 24
+minimizeBtn.Text = "≡"
+minimizeBtn.Visible = false
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    minimizeBtn.Visible = false
+end)
+
+local toggleMinimized = false
+local function minimize()
+    frame.Visible = false
+    minimizeBtn.Visible = true
+end
+
+-- Botão para minimizar o menu
+local minimizeButtonInFrame = Instance.new("TextButton", frame)
+minimizeButtonInFrame.Size = UDim2.new(0, 30, 0, 30)
+minimizeButtonInFrame.Position = UDim2.new(1, -35, 0, 2)
+minimizeButtonInFrame.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+minimizeButtonInFrame.TextColor3 = Color3.new(1,1,1)
+minimizeButtonInFrame.Font = Enum.Font.GothamBold
+minimizeButtonInFrame.TextSize = 18
+minimizeButtonInFrame.Text = "_"
+
+minimizeButtonInFrame.MouseButton1Click:Connect(function()
+    minimize()
 end)
