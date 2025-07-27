@@ -1,179 +1,249 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local RunService = game:GetService("RunService")
+-- GP7 MODS - Steal a Brainrot
+-- Menu verde e preto, botão flutuante com minimizar
+-- Funções: Speed Hack, Pulo Infinito, ESP verde (nome mesmo invisível)
 
--- Configurações iniciais
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+-- Variables
 local speedEnabled = false
 local jumpEnabled = false
-local walkSpeedNormal = 16
-local jumpPowerNormal = 50
-local walkSpeedCurrent = walkSpeedNormal
-local jumpPowerBoost = 150
+local espEnabled = false
 
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
+local UIS = game:GetService("UserInputService")
 
--- Atualiza humanoid se personagem renascer
-player.CharacterAdded:Connect(function(char)
-    character = char
-    humanoid = character:WaitForChild("Humanoid")
-    humanoid.WalkSpeed = speedEnabled and walkSpeedCurrent or walkSpeedNormal
-    humanoid.JumpPower = jumpEnabled and jumpPowerBoost or jumpPowerNormal
-end)
+-- Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "GP7MODSGUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
--- Criar GUI
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 280, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -140, 0.5, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 50, 0)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GP7Menu"
-screenGui.Parent = playerGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+Title.BorderSizePixel = 0
+Title.Text = "GP7 MODS"
+Title.TextColor3 = Color3.fromRGB(0, 255, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.Parent = MainFrame
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 170)
-frame.Position = UDim2.new(0, 10, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-frame.BorderSizePixel = 0
-frame.Parent = screenGui
-frame.Active = true
-frame.Draggable = true
+-- Minimize Button
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Name = "MinimizeBtn"
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -30, 0, 0)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 20
+MinimizeBtn.Parent = MainFrame
 
--- Título
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "GP7 MENU"
-title.Font = Enum.Font.GothamBold
-title.TextSize = 22
-title.TextColor3 = Color3.fromRGB(255, 50, 50)
-title.TextStrokeColor3 = Color3.new(0,0,0)
-title.TextStrokeTransparency = 0.5
-title.TextWrapped = true
+-- Buttons Container
+local ButtonsFrame = Instance.new("Frame")
+ButtonsFrame.Name = "ButtonsFrame"
+ButtonsFrame.Size = UDim2.new(1, -20, 1, -40)
+ButtonsFrame.Position = UDim2.new(0, 10, 0, 35)
+ButtonsFrame.BackgroundTransparency = 1
+ButtonsFrame.Parent = MainFrame
 
--- Speed Hack Label
-local speedLabel = Instance.new("TextLabel", frame)
-speedLabel.Size = UDim2.new(1, -20, 0, 25)
-speedLabel.Position = UDim2.new(0, 10, 0, 40)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Speed Hack: OFF"
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextSize = 18
-speedLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+-- Speed Hack Button
+local SpeedBtn = Instance.new("TextButton")
+SpeedBtn.Name = "SpeedBtn"
+SpeedBtn.Size = UDim2.new(1, 0, 0, 40)
+SpeedBtn.Position = UDim2.new(0, 0, 0, 0)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+SpeedBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+SpeedBtn.Font = Enum.Font.GothamBold
+SpeedBtn.TextSize = 22
+SpeedBtn.Text = "Speed Hack: OFF"
+SpeedBtn.Parent = ButtonsFrame
 
--- Speed Hack Slider
-local sliderFrame = Instance.new("Frame", frame)
-sliderFrame.Size = UDim2.new(0, 200, 0, 20)
-sliderFrame.Position = UDim2.new(0, 10, 0, 70)
-sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-sliderFrame.BorderSizePixel = 0
+-- Jump Hack Button
+local JumpBtn = Instance.new("TextButton")
+JumpBtn.Name = "JumpBtn"
+JumpBtn.Size = UDim2.new(1, 0, 0, 40)
+JumpBtn.Position = UDim2.new(0, 0, 0, 45)
+JumpBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+JumpBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+JumpBtn.Font = Enum.Font.GothamBold
+JumpBtn.TextSize = 22
+JumpBtn.Text = "Pulo Infinito: OFF"
+JumpBtn.Parent = ButtonsFrame
 
-local sliderBar = Instance.new("Frame", sliderFrame)
-sliderBar.Size = UDim2.new(0.3, 0, 1, 0) -- inicial 30% (walkSpeedCurrent=walkSpeedNormal)
-sliderBar.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-sliderBar.BorderSizePixel = 0
+-- ESP Button
+local ESPBtn = Instance.new("TextButton")
+ESPBtn.Name = "ESPBtn"
+ESPBtn.Size = UDim2.new(1, 0, 0, 40)
+ESPBtn.Position = UDim2.new(0, 0, 0, 90)
+ESPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+ESPBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+ESPBtn.Font = Enum.Font.GothamBold
+ESPBtn.TextSize = 22
+ESPBtn.Text = "ESP Verde: OFF"
+ESPBtn.Parent = ButtonsFrame
 
-local dragging = false
+-- Floating Button
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Name = "FloatBtn"
+FloatBtn.Size = UDim2.new(0, 60, 0, 30)
+FloatBtn.Position = UDim2.new(0, 10, 0.7, 0)
+FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+FloatBtn.Text = "GP7"
+FloatBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+FloatBtn.Font = Enum.Font.GothamBold
+FloatBtn.TextSize = 20
+FloatBtn.Parent = ScreenGui
+FloatBtn.Active = true
+FloatBtn.Draggable = true
 
-sliderBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
+-- Minimize / Maximize functionality
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    if minimized == false then
+        MainFrame.Size = UDim2.new(0, 280, 0, 30)
+        ButtonsFrame.Visible = false
+        minimized = true
+    else
+        MainFrame.Size = UDim2.new(0, 280, 0, 180)
+        ButtonsFrame.Visible = true
+        minimized = false
     end
 end)
 
-sliderBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
+-- Show/hide main menu by floating button
+FloatBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Função Speed Hack
+SpeedBtn.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    SpeedBtn.Text = "Speed Hack: " .. (speedEnabled and "ON" or "OFF")
+    if speedEnabled then
+        -- Aplicar velocidade maior
+        LocalPlayer.Character.Humanoid.WalkSpeed = 40
+    else
+        -- Resetar velocidade padrão
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
     end
 end)
 
-sliderFrame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local relativeX = math.clamp(input.Position.X - sliderFrame.AbsolutePosition.X, 0, sliderFrame.AbsoluteSize.X)
-        local percent = relativeX / sliderFrame.AbsoluteSize.X
-        sliderBar.Size = UDim2.new(percent, 0, 1, 0)
-        walkSpeedCurrent = math.floor(16 + (84 * percent)) -- speed entre 16 e 100
-        if speedEnabled then
-            humanoid.WalkSpeed = walkSpeedCurrent
+-- Função Pulo infinito
+JumpBtn.MouseButton1Click:Connect(function()
+    jumpEnabled = not jumpEnabled
+    JumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
+end)
+
+-- ESP
+local espLabels = {}
+
+local function createESP(plr)
+    if espLabels[plr] then return end -- Já existe
+
+    local head = plr.Character and plr.Character:FindFirstChild("Head")
+    if head then
+        local Billboard = Instance.new("BillboardGui")
+        Billboard.Name = "GP7ESP"
+        Billboard.Adornee = head
+        Billboard.Size = UDim2.new(0, 100, 0, 25)
+        Billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+        Billboard.AlwaysOnTop = true
+        Billboard.Parent = head
+
+        local Label = Instance.new("TextLabel")
+        Label.BackgroundTransparency = 1
+        Label.Size = UDim2.new(1, 0, 1, 0)
+        Label.TextColor3 = Color3.fromRGB(0, 255, 0)
+        Label.TextStrokeTransparency = 0
+        Label.Text = plr.Name
+        Label.Font = Enum.Font.GothamBold
+        Label.TextSize = 20
+        Label.Parent = Billboard
+
+        espLabels[plr] = Billboard
+    end
+end
+
+local function removeESP(plr)
+    if espLabels[plr] then
+        espLabels[plr]:Destroy()
+        espLabels[plr] = nil
+    end
+end
+
+ESPBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    ESPBtn.Text = "ESP Verde: " .. (espEnabled and "ON" or "OFF")
+    if not espEnabled then
+        -- remover todos ESP
+        for plr, gui in pairs(espLabels) do
+            gui:Destroy()
+        end
+        espLabels = {}
+    else
+        -- criar ESP para todos os players
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                createESP(plr)
+            end
         end
     end
 end)
 
--- Botão Pulo Infinito
-local jumpBtn = Instance.new("TextButton", frame)
-jumpBtn.Size = UDim2.new(0, 200, 0, 40)
-jumpBtn.Position = UDim2.new(0, 10, 0, 100)
-jumpBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-jumpBtn.TextColor3 = Color3.new(1,1,1)
-jumpBtn.Font = Enum.Font.GothamBold
-jumpBtn.TextSize = 18
-jumpBtn.Text = "Ativar Pulo Infinito"
-
-jumpBtn.MouseButton1Click:Connect(function()
-    jumpEnabled = not jumpEnabled
-    if jumpEnabled then
-        jumpBtn.Text = "Desativar Pulo Infinito"
-        humanoid.JumpPower = jumpPowerBoost
-    else
-        jumpBtn.Text = "Ativar Pulo Infinito"
-        humanoid.JumpPower = jumpPowerNormal
+-- Atualiza ESP quando jogador entra e sai
+Players.PlayerAdded:Connect(function(plr)
+    if espEnabled then
+        plr.CharacterAdded:Connect(function()
+            wait(1)
+            createESP(plr)
+        end)
     end
 end)
 
--- Botão ligar/desligar Speed Hack
-local speedToggleBtn = Instance.new("TextButton", frame)
-speedToggleBtn.Size = UDim2.new(0, 200, 0, 40)
-speedToggleBtn.Position = UDim2.new(0, 10, 0, 140)
-speedToggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-speedToggleBtn.TextColor3 = Color3.new(1,1,1)
-speedToggleBtn.Font = Enum.Font.GothamBold
-speedToggleBtn.TextSize = 18
-speedToggleBtn.Text = "Ativar Speed Hack"
+Players.PlayerRemoving:Connect(function(plr)
+    removeESP(plr)
+end)
 
-speedToggleBtn.MouseButton1Click:Connect(function()
-    speedEnabled = not speedEnabled
-    if speedEnabled then
-        speedToggleBtn.Text = "Desativar Speed Hack"
-        speedLabel.Text = ("Speed Hack: ON (%d)"):format(walkSpeedCurrent)
-        humanoid.WalkSpeed = walkSpeedCurrent
-    else
-        speedToggleBtn.Text = "Ativar Speed Hack"
-        speedLabel.Text = "Speed Hack: OFF"
-        humanoid.WalkSpeed = walkSpeedNormal
+-- Pulo infinito implementação
+RunService.Heartbeat:Connect(function()
+    if jumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+            if humanoid:GetState() == Enum.HumanoidStateType.Freefall or humanoid:GetState() == Enum.HumanoidStateType.Landed or humanoid:GetState() == Enum.HumanoidStateType.Running then
+                humanoid.Jump = true
+            end
+        end
     end
 end)
 
--- Botão Minimizar
-local minimizeBtn = Instance.new("TextButton", screenGui)
-minimizeBtn.Size = UDim2.new(0, 40, 0, 40)
-minimizeBtn.Position = UDim2.new(0, 10, 0.3, 0)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 24
-minimizeBtn.Text = "≡"
-minimizeBtn.Visible = false
-
-minimizeBtn.MouseButton1Click:Connect(function()
-    frame.Visible = true
-    minimizeBtn.Visible = false
+-- Speed hack manutenção (se o personagem respawnar, aplica velocidade novamente)
+LocalPlayer.CharacterAdded:Connect(function(char)
+    wait(1)
+    if speedEnabled and char:FindFirstChildOfClass("Humanoid") then
+        char:FindFirstChildOfClass("Humanoid").WalkSpeed = 40
+    end
 end)
 
-local toggleMinimized = false
-local function minimize()
-    frame.Visible = false
-    minimizeBtn.Visible = true
-end
+-- ESP funciona mesmo se invisível
+-- O truque é usar BillboardGui parented na cabeça, que é visível para todos, mesmo com invisibilidade (capa)
+-- O script já adiciona ESP nos jogadores, sem bloquear pela invisibilidade
 
--- Botão para minimizar o menu
-local minimizeButtonInFrame = Instance.new("TextButton", frame)
-minimizeButtonInFrame.Size = UDim2.new(0, 30, 0, 30)
-minimizeButtonInFrame.Position = UDim2.new(1, -35, 0, 2)
-minimizeButtonInFrame.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-minimizeButtonInFrame.TextColor3 = Color3.new(1,1,1)
-minimizeButtonInFrame.Font = Enum.Font.GothamBold
-minimizeButtonInFrame.TextSize = 18
-minimizeButtonInFrame.Text = "_"
-
-minimizeButtonInFrame.MouseButton1Click:Connect(function()
-    minimize()
-end)
+-- Final
+print("GP7 MODS carregado! Use o botão flutuante para abrir/fechar o menu.")
