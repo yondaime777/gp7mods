@@ -3,8 +3,8 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local humanoid = nil
 local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
 local speedEnabled = false
 local jumpEnabled = false
@@ -12,33 +12,45 @@ local jumpEnabled = false
 local normalSpeed = 16
 local speedValue = 40
 
+-- Função para atualizar referência do personagem e humanoid
 local function onCharacterAdded(char)
     character = char
     humanoid = char:WaitForChild("Humanoid")
 end
-
-onCharacterAdded(character)
 player.CharacterAdded:Connect(onCharacterAdded)
 
--- Speed hack constante
+-- Reforça o speed hack constantemente
 RunService.Heartbeat:Connect(function()
     if humanoid then
         if speedEnabled then
-            humanoid.WalkSpeed = speedValue
+            if humanoid.WalkSpeed ~= speedValue then
+                humanoid.WalkSpeed = speedValue
+            end
         else
-            humanoid.WalkSpeed = normalSpeed
+            if humanoid.WalkSpeed ~= normalSpeed then
+                humanoid.WalkSpeed = normalSpeed
+            end
         end
     end
 end)
 
--- Infinite jump: forçar estado de pulo sem teleportar
-UserInputService.JumpRequest:Connect(function()
-    if jumpEnabled and humanoid then
-        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+-- Infinite jump usando evento de tecla para simular múltiplos pulos
+local canJump = true
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
+        if canJump and humanoid and humanoid.Health > 0 then
+            -- Simula um pulo 'real' com delay pra evitar travar
+            canJump = false
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            wait(0.2)
+            canJump = true
+        end
     end
 end)
 
--- GUI bem simples para ligar/desligar
+-- GUI básico pra ligar/desligar
 
 local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui", playerGui)
