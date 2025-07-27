@@ -11,10 +11,10 @@ local espEnabled = false
 local espLabels = {}
 local espBoxes = {}
 
-local walkSpeedValue = 50
+local walkSpeedValue = 70
 local normalWalkSpeed = 16
 
--- ESP Functions (mesmo do antes)
+-- ESP Functions
 local function createESP(plr)
     if espLabels[plr] or espBoxes[plr] then return end
     local character = plr.Character
@@ -92,7 +92,7 @@ local function toggleESP(enabled)
     end
 end
 
--- GUI Setup (igual ao anterior)
+-- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GP7MODSGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -200,35 +200,47 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Speed Hack: força WalkSpeed a cada frame
+-- Speed Hack melhorado
 RunService.Heartbeat:Connect(function()
     local character = LocalPlayer.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            if speedEnabled and humanoid.WalkSpeed ~= walkSpeedValue then
-                humanoid.WalkSpeed = walkSpeedValue
-            elseif not speedEnabled and humanoid.WalkSpeed ~= normalWalkSpeed then
-                humanoid.WalkSpeed = normalWalkSpeed
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if humanoid and hrp then
+            if speedEnabled then
+                if humanoid.WalkSpeed ~= walkSpeedValue then
+                    humanoid.WalkSpeed = walkSpeedValue
+                end
+                -- Tentativa extra: ajustar velocity para frente na direção do movimento
+                local moveDir = humanoid.MoveDirection
+                if moveDir.Magnitude > 0 then
+                    hrp.Velocity = moveDir.Unit * walkSpeedValue * 5 + Vector3.new(0, hrp.Velocity.Y, 0)
+                end
+            else
+                if humanoid.WalkSpeed ~= normalWalkSpeed then
+                    humanoid.WalkSpeed = normalWalkSpeed
+                end
             end
         end
     end
 end)
 
--- Infinite Jump clássico com debounce para evitar spam exagerado
-local canJump = true
+-- Infinite jump manual que move o personagem para cima ao apertar espaço
+local jumpCooldown = 0.15
+local lastJumpTime = 0
+
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid and canJump then
-                canJump = false
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                -- pequena espera para evitar múltiplos pulos muito rápidos
-                task.wait(0.15)
-                canJump = true
+        local now = tick()
+        if now - lastJumpTime >= jumpCooldown then
+            lastJumpTime = now
+            local character = LocalPlayer.Character
+            if character then
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 10, 0) -- sobe 10 studs instantâneo (ajuste se quiser)
+                end
             end
         end
     end
@@ -254,4 +266,4 @@ Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
-print("GP7 MODS carregado com Speed Hack, Infinite Jump e ESP verde!")
+print("GP7 MODS carregado com Speed Hack melhorado, Infinite Jump manual e ESP verde!")
