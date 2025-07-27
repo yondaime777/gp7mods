@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -12,8 +11,13 @@ local espEnabled = false
 local espLabels = {}
 local espBoxes = {}
 
-local speedVelocityValue = 30 -- velocidade reduzida
+local walkSpeedValue = 70
+local normalWalkSpeed = 16
 
+local jumpPowerValue = 100
+local normalJumpPower = 50
+
+-- ESP Functions
 local function createESP(plr)
     if espLabels[plr] or espBoxes[plr] then return end
 
@@ -92,6 +96,7 @@ local function toggleESP(enabled)
     end
 end
 
+-- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GP7MODSGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -199,80 +204,47 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
+-- Speed Hack: muda WalkSpeed direto
 RunService.Heartbeat:Connect(function()
     local character = LocalPlayer.Character
     if character then
-        local hrp = character:FindFirstChild("HumanoidRootPart")
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if hrp and humanoid then
+        if humanoid then
             if speedEnabled then
-                local moveDir = humanoid.MoveDirection
-                if moveDir.Magnitude > 0 then
-                    hrp.Velocity = Vector3.new(
-                        moveDir.X * speedVelocityValue,
-                        hrp.Velocity.Y,
-                        moveDir.Z * speedVelocityValue
-                    )
-                else
-                    hrp.Velocity = Vector3.new(0, hrp.Velocity.Y, 0)
-                end
+                humanoid.WalkSpeed = walkSpeedValue
             else
-                hrp.Velocity = Vector3.new(0, hrp.Velocity.Y, 0)
-                humanoid.WalkSpeed = 16
+                humanoid.WalkSpeed = normalWalkSpeed
             end
-
             if not jumpEnabled then
-                humanoid.JumpPower = 50
-                humanoid.PlatformStand = false
-                if hrp:FindFirstChild("BodyForce") then
-                    hrp.BodyForce:Destroy()
-                end
+                humanoid.JumpPower = normalJumpPower
             end
         end
     end
 end)
 
--- Pulo infinito com manipulação de gravidade local (adiciona BodyForce pra neutralizar gravidade e aplicar impulso)
-coroutine.wrap(function()
-    while true do
-        RunService.Heartbeat:Wait()
-        if jumpEnabled and LocalPlayer.Character then
-            local character = LocalPlayer.Character
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            local humanoid = character:FindFirstChildOfClass("Humanoid")
-            if humanoid and hrp then
-                humanoid.JumpPower = 100
-                humanoid.PlatformStand = false
-
-                -- Remove BodyVelocity se já existir para evitar acumular
-                if hrp:FindFirstChild("BodyForce") then
-                    hrp.BodyForce:Destroy()
-                end
-
-                -- Adiciona BodyForce para neutralizar gravidade
-                local bodyForce = Instance.new("BodyForce")
-                bodyForce.Force = Vector3.new(0, hrp:GetMass() * workspace.Gravity, 0)
-                bodyForce.Parent = hrp
-
-                -- Força o pulo aplicando um impulso para cima
-                hrp.Velocity = Vector3.new(hrp.Velocity.X, 70, hrp.Velocity.Z)
+-- Função para configurar o pulo infinito para cada humanoid (chama no respawn também)
+local function setupInfiniteJump(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.StateChanged:Connect(function(oldState, newState)
+        if jumpEnabled then
+            if newState == Enum.HumanoidStateType.Landed then
+                humanoid.Jump = true
             end
-        else
-            if LocalPlayer.Character then
-                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if humanoid and hrp then
-                    humanoid.JumpPower = 50
-                    humanoid.PlatformStand = false
-                    if hrp:FindFirstChild("BodyForce") then
-                        hrp.BodyForce:Destroy()
-                    end
-                end
-            end
-            wait(0.5)
         end
-    end
-end)()
+    end)
+    -- Ajusta JumpPower também
+    humanoid.JumpPower = jumpEnabled and jumpPowerValue or normalJumpPower
+end
+
+-- Setup inicial e conexão pra respawn
+if LocalPlayer.Character then
+    setupInfiniteJump(LocalPlayer.Character)
+end
+
+LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1)
+    setupInfiniteJump(character)
+end)
 
 SpeedBtn.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
@@ -282,6 +254,14 @@ end)
 JumpBtn.MouseButton1Click:Connect(function()
     jumpEnabled = not jumpEnabled
     JumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
+    -- Ajusta JumpPower do humanoid atual
+    local character = LocalPlayer.Character
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.JumpPower = jumpEnabled and jumpPowerValue or normalJumpPower
+        end
+    end
 end)
 
 ESPBtn.MouseButton1Click:Connect(function()
@@ -294,4 +274,4 @@ Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
-print("GP7 MODS carregado com Speed Hack (30), Pulo Infinito com gravidade neutra e ESP gigante.")
+print("GP7 MODS carregado com Speed Hack (WalkSpeed), Pulo Infinito e ESP verde!")
