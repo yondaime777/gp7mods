@@ -1,122 +1,83 @@
--- GP7 MENU - Script para Steal a Brainrot
--- Feito para Delta Exploit - by ChatGPT
+local player = game.Players.LocalPlayer
+local uis = game:GetService("UserInputService")
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "GP7MENU"
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Mouse = LocalPlayer:GetMouse()
+local dragging, dragInput, dragStart, startPos
 
--- GUI
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "GP7_MENU"
+-- Cria o menu principal
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 200, 0, 180)
+frame.Position = UDim2.new(0.5, -100, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+frame.BorderColor3 = Color3.fromRGB(255, 0, 0)
+frame.Active = true
+frame.Draggable = true
 
-local DragFrame = Instance.new("Frame", ScreenGui)
-DragFrame.Size = UDim2.new(0, 220, 0, 230)
-DragFrame.Position = UDim2.new(0, 100, 0, 100)
-DragFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-DragFrame.BorderSizePixel = 0
-DragFrame.Active = true
-DragFrame.Draggable = true
+local title = Instance.new("TextLabel", frame)
+title.Text = "GP7 MENU"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+title.TextColor3 = Color3.fromRGB(255, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
 
-local Title = Instance.new("TextLabel", DragFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "🔥 GP7 MENU 🔥"
-Title.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
+-- Botão Speed Hack
+local speedBtn = Instance.new("TextButton", frame)
+speedBtn.Position = UDim2.new(0, 10, 0, 40)
+speedBtn.Size = UDim2.new(1, -20, 0, 30)
+speedBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBtn.Text = "Comprar Speed + Ativar"
+speedBtn.Font = Enum.Font.Gotham
+speedBtn.TextSize = 14
 
-local function createButton(name, posY, callback)
-	local btn = Instance.new("TextButton", DragFrame)
-	btn.Size = UDim2.new(1, -20, 0, 30)
-	btn.Position = UDim2.new(0, 10, 0, posY)
-	btn.Text = name
-	btn.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-	btn.TextColor3 = Color3.new(1, 1, 1)
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 14
-	btn.MouseButton1Click:Connect(callback)
-	return btn
-end
+-- Botão Super Pulo
+local jumpBtn = Instance.new("TextButton", frame)
+jumpBtn.Position = UDim2.new(0, 10, 0, 80)
+jumpBtn.Size = UDim2.new(1, -20, 0, 30)
+jumpBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpBtn.Text = "Comprar Pulo + Ativar"
+jumpBtn.Font = Enum.Font.Gotham
+jumpBtn.TextSize = 14
 
--- ESP
-local espOn = false
-local espFolder = Instance.new("Folder", game.CoreGui)
-espFolder.Name = "GP7_ESP"
+-- Variáveis de controle
+local speedOn = false
+local jumpOn = false
 
-local function createESP(player)
-	if player == LocalPlayer then return end
-	local head = player:FindFirstChild("Head")
-	if head and not espFolder:FindFirstChild(player.Name) then
-		local billboard = Instance.new("BillboardGui", espFolder)
-		billboard.Name = player.Name
-		billboard.Adornee = head
-		billboard.Size = UDim2.new(0, 100, 0, 20)
-		billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-		billboard.AlwaysOnTop = true
-
-		local nameLabel = Instance.new("TextLabel", billboard)
-		nameLabel.Size = UDim2.new(1, 0, 1, 0)
-		nameLabel.BackgroundTransparency = 1
-		nameLabel.Text = player.Name
-		nameLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-		nameLabel.TextStrokeTransparency = 0
-		nameLabel.TextSize = 14
-	end
-end
-
-local function toggleESP()
-	espOn = not espOn
-	if espOn then
-		for _, p in pairs(Players:GetPlayers()) do
-			createESP(p)
-		end
-		Players.PlayerAdded:Connect(createESP)
-	else
-		espFolder:ClearAllChildren()
-	end
-end
-
--- Speed Hack
-local speedEnabled = false
-local function toggleSpeed()
-	speedEnabled = not speedEnabled
-	if speedEnabled then
+-- Compra e ativa speed
+speedBtn.MouseButton1Click:Connect(function()
+	if not speedOn then
+		-- Compra o Speed Coil
 		local args = { "Speed Coil" }
-		game:GetService("ReplicatedStorage")
-			:WaitForChild("Packages")
-			:WaitForChild("Net")
-			:WaitForChild("RF/CoinsShopService/RequestBuy")
-			:InvokeServer(unpack(args))
+		game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy"):InvokeServer(unpack(args))
 	end
-end
+	speedOn = not speedOn
+	speedBtn.Text = speedOn and "Speed ATIVO" or "Speed DESATIVADO"
 
--- Pulo Infinito
-local jumpEnabled = false
-local function toggleJump()
-	jumpEnabled = not jumpEnabled
-	if jumpEnabled then
+	-- Aplica o efeito
+	if speedOn then
+		player.Character.Humanoid.WalkSpeed = 50
+	else
+		player.Character.Humanoid.WalkSpeed = 16
+	end
+end)
+
+-- Compra e ativa super pulo
+jumpBtn.MouseButton1Click:Connect(function()
+	if not jumpOn then
+		-- Compra o Gravity Coil
 		local args = { "Gravity Coil" }
-		game:GetService("ReplicatedStorage")
-			:WaitForChild("Packages")
-			:WaitForChild("Net")
-			:WaitForChild("RF/CoinsShopService/RequestBuy")
-			:InvokeServer(unpack(args))
+		game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy"):InvokeServer(unpack(args))
 	end
-end
+	jumpOn = not jumpOn
+	jumpBtn.Text = jumpOn and "Pulo ATIVO" or "Pulo DESATIVADO"
 
--- Botões
-createButton("🔴 Ativar ESP (vermelho)", 40, toggleESP)
-createButton("⚡ Speed Hack", 80, toggleSpeed)
-createButton("🚀 Pulo Infinito", 120, toggleJump)
-
--- Minimizar
-local minimized = false
-local minimizeBtn = createButton("🔽 Minimizar", 160, function()
-	minimized = not minimized
-	for _, v in ipairs(DragFrame:GetChildren()) do
-		if v:IsA("TextButton") and v ~= minimizeBtn then
-			v.Visible = not minimized
-		end
+	-- Aplica o efeito
+	if jumpOn then
+		player.Character.Humanoid.JumpPower = 120
+	else
+		player.Character.Humanoid.JumpPower = 50
 	end
-	minimizeBtn.Text = minimized and "🔼 Maximizar" or "🔽 Minimizar"
 end)
