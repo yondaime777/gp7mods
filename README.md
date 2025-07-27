@@ -1,118 +1,112 @@
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "GP7MENU"
-gui.ResetOnSpawn = false
+-- GP7 MENU by @yondaime777
+local Player = game.Players.LocalPlayer
+local Backpack = Player:WaitForChild("Backpack")
+local Character = Player.Character or Player.CharacterAdded:Wait()
 
--- Estados
-local speedOn = false
-local jumpOn = false
-local menuVisible = true
-
--- Funções de compra
-local function buyItem(item)
-	local args = { item }
-	local shop = game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy")
-	shop:InvokeServer(unpack(args))
-end
-
--- Menu principal
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 210)
-frame.Position = UDim2.new(0.3, 0, 0.3, 0)
-frame.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
-frame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-frame.Active = true
-frame.Draggable = true
-
--- Título
-local title = Instance.new("TextLabel", frame)
-title.Text = "GP7 MENU"
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-title.TextColor3 = Color3.fromRGB(255, 0, 0)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-
--- Botão SPEED
-local speedBtn = Instance.new("TextButton", frame)
-speedBtn.Position = UDim2.new(0, 10, 0, 50)
-speedBtn.Size = UDim2.new(1, -20, 0, 40)
-speedBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedBtn.Font = Enum.Font.Gotham
-speedBtn.TextSize = 14
-speedBtn.Text = "Ativar Speed Hack (DESATIVADO)"
-
--- Botão JUMP
-local jumpBtn = Instance.new("TextButton", frame)
-jumpBtn.Position = UDim2.new(0, 10, 0, 100)
-jumpBtn.Size = UDim2.new(1, -20, 0, 40)
-jumpBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-jumpBtn.Font = Enum.Font.Gotham
-jumpBtn.TextSize = 14
-jumpBtn.Text = "Ativar Super Pulo (DESATIVADO)"
-
--- Botão Minimizar
-local minimizeBtn = Instance.new("TextButton", frame)
-minimizeBtn.Position = UDim2.new(0, 10, 0, 160)
-minimizeBtn.Size = UDim2.new(1, -20, 0, 30)
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextSize = 14
-minimizeBtn.Text = "Minimizar"
+local Gui = Instance.new("ScreenGui", game.CoreGui)
+Gui.Name = "GP7Menu"
+Gui.ResetOnSpawn = false
 
 -- Botão flutuante
-local floatingBtn = Instance.new("TextButton", gui)
-floatingBtn.Position = UDim2.new(0, 20, 0.5, -30)
-floatingBtn.Size = UDim2.new(0, 100, 0, 30)
-floatingBtn.Text = "GP7 MENU"
-floatingBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-floatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-floatingBtn.Font = Enum.Font.GothamBold
-floatingBtn.TextSize = 14
-floatingBtn.Visible = false
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Text = "GP7"
+FloatBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+FloatBtn.Size = UDim2.new(0, 60, 0, 30)
+FloatBtn.Position = UDim2.new(0, 10, 0, 10)
+FloatBtn.Draggable = true
+FloatBtn.Active = true
+FloatBtn.TextColor3 = Color3.new(1, 1, 1)
+FloatBtn.Parent = Gui
 
--- Funções dos botões
-speedBtn.MouseButton1Click:Connect(function()
-	if not speedOn then
-		buyItem("Speed Coil")
-	end
-	speedOn = not speedOn
-	speedBtn.Text = speedOn and "Ativar Speed Hack (ATIVADO)" or "Ativar Speed Hack (DESATIVADO)"
-	character.Humanoid.WalkSpeed = speedOn and 50 or 16
+-- Menu principal
+local Menu = Instance.new("Frame")
+Menu.Size = UDim2.new(0, 250, 0, 160)
+Menu.Position = UDim2.new(0, 80, 0, 10)
+Menu.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+Menu.Visible = false
+Menu.Parent = Gui
+
+-- Título
+local Title = Instance.new("TextLabel", Menu)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+Title.Text = "GP7 MENU"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+
+-- Função para comprar e equipar item
+local function buyAndEquip(itemName)
+    local args = { itemName }
+    local success = pcall(function()
+        game:GetService("ReplicatedStorage")
+        :WaitForChild("Packages")
+        :WaitForChild("Net")
+        :WaitForChild("RF/CoinsShopService/RequestBuy")
+        :InvokeServer(unpack(args))
+    end)
+
+    task.wait(1)
+
+    -- Equipa da mochila
+    local tool = Backpack:FindFirstChild(itemName) or Character:FindFirstChild(itemName)
+    if tool then
+        tool.Parent = Character
+    end
+end
+
+-- Botão Speed Hack
+local SpeedBtn = Instance.new("TextButton", Menu)
+SpeedBtn.Size = UDim2.new(0.9, 0, 0, 30)
+SpeedBtn.Position = UDim2.new(0.05, 0, 0, 40)
+SpeedBtn.TextColor3 = Color3.new(1, 1, 1)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+SpeedBtn.Text = "Speed Hack [DESATIVADO]"
+
+local speedAtivo = false
+SpeedBtn.MouseButton1Click:Connect(function()
+    speedAtivo = not speedAtivo
+    if speedAtivo then
+        SpeedBtn.Text = "Speed Hack [ATIVADO]"
+        buyAndEquip("Speed Coil")
+    else
+        SpeedBtn.Text = "Speed Hack [DESATIVADO]"
+    end
 end)
 
-jumpBtn.MouseButton1Click:Connect(function()
-	if not jumpOn then
-		buyItem("Gravity Coil")
-	end
-	jumpOn = not jumpOn
-	jumpBtn.Text = jumpOn and "Ativar Super Pulo (ATIVADO)" or "Ativar Super Pulo (DESATIVADO)"
-	character.Humanoid.JumpPower = jumpOn and 120 or 50
+-- Botão Super Pulo
+local JumpBtn = Instance.new("TextButton", Menu)
+JumpBtn.Size = UDim2.new(0.9, 0, 0, 30)
+JumpBtn.Position = UDim2.new(0.05, 0, 0, 80)
+JumpBtn.TextColor3 = Color3.new(1, 1, 1)
+JumpBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+JumpBtn.Text = "Pulo Infinito [DESATIVADO]"
+
+local puloAtivo = false
+JumpBtn.MouseButton1Click:Connect(function()
+    puloAtivo = not puloAtivo
+    if puloAtivo then
+        JumpBtn.Text = "Pulo Infinito [ATIVADO]"
+        buyAndEquip("Gravity Coil")
+    else
+        JumpBtn.Text = "Pulo Infinito [DESATIVADO]"
+    end
 end)
 
-minimizeBtn.MouseButton1Click:Connect(function()
-	menuVisible = false
-	frame.Visible = false
-	floatingBtn.Visible = true
+-- Botão Fechar
+local CloseBtn = Instance.new("TextButton", Menu)
+CloseBtn.Size = UDim2.new(0.9, 0, 0, 30)
+CloseBtn.Position = UDim2.new(0.05, 0, 0, 120)
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+CloseBtn.Text = "Fechar"
+CloseBtn.MouseButton1Click:Connect(function()
+    Menu.Visible = false
+    FloatBtn.Visible = true
 end)
 
-floatingBtn.MouseButton1Click:Connect(function()
-	menuVisible = true
-	frame.Visible = true
-	floatingBtn.Visible = false
-end)
-
--- Garante que ao morrer reaplique
-player.CharacterAdded:Connect(function(char)
-	character = char
-	char:WaitForChild("Humanoid").Died:Connect(function()
-		speedOn = false
-		jumpOn = false
-		speedBtn.Text = "Ativar Speed Hack (DESATIVADO)"
-		jumpBtn.Text = "Ativar Super Pulo (DESATIVADO)"
-	end)
+-- Mostrar menu
+FloatBtn.MouseButton1Click:Connect(function()
+    Menu.Visible = true
+    FloatBtn.Visible = false
 end)
