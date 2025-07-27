@@ -11,13 +11,10 @@ local espEnabled = false
 local espLabels = {}
 local espBoxes = {}
 
-local walkSpeedValue = 40
+local walkSpeedValue = 50
 local normalWalkSpeed = 16
 
-local jumpPowerValue = 70
-local normalJumpPower = 50
-
--- ESP Functions
+-- Função para criar ESP
 local function createESP(plr)
     if espLabels[plr] or espBoxes[plr] then return end
 
@@ -204,7 +201,7 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Speed Hack: muda WalkSpeed direto
+-- Speed Hack control
 RunService.Heartbeat:Connect(function()
     local character = LocalPlayer.Character
     if character then
@@ -215,35 +212,24 @@ RunService.Heartbeat:Connect(function()
             else
                 humanoid.WalkSpeed = normalWalkSpeed
             end
-            if not jumpEnabled then
-                humanoid.JumpPower = normalJumpPower
-            end
         end
     end
 end)
 
--- Função para configurar o pulo infinito para cada humanoid (chama no respawn também)
-local function setupInfiniteJump(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    humanoid.StateChanged:Connect(function(oldState, newState)
-        if jumpEnabled then
-            if newState == Enum.HumanoidStateType.Landed then
-                humanoid.Jump = true
+-- Infinite Jump clássico
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard then
+        if input.KeyCode == Enum.KeyCode.Space then
+            local character = LocalPlayer.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
             end
         end
-    end)
-    -- Ajusta JumpPower também
-    humanoid.JumpPower = jumpEnabled and jumpPowerValue or normalJumpPower
-end
-
--- Setup inicial e conexão pra respawn
-if LocalPlayer.Character then
-    setupInfiniteJump(LocalPlayer.Character)
-end
-
-LocalPlayer.CharacterAdded:Connect(function(character)
-    wait(1)
-    setupInfiniteJump(character)
+    end
 end)
 
 SpeedBtn.MouseButton1Click:Connect(function()
@@ -254,14 +240,6 @@ end)
 JumpBtn.MouseButton1Click:Connect(function()
     jumpEnabled = not jumpEnabled
     JumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
-    -- Ajusta JumpPower do humanoid atual
-    local character = LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = jumpEnabled and jumpPowerValue or normalJumpPower
-        end
-    end
 end)
 
 ESPBtn.MouseButton1Click:Connect(function()
@@ -274,4 +252,4 @@ Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
-print("GP7 MODS carregado com Speed Hack (WalkSpeed), Pulo Infinito e ESP verde!")
+print("GP7 MODS carregado com Speed Hack, Infinite Jump clássico e ESP verde!")
