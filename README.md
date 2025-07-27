@@ -14,10 +14,9 @@ local espBoxes = {}
 local walkSpeedValue = 50
 local normalWalkSpeed = 16
 
--- Função para criar ESP
+-- ESP Functions (mesmo do antes)
 local function createESP(plr)
     if espLabels[plr] or espBoxes[plr] then return end
-
     local character = plr.Character
     if not character then return end
     local head = character:FindFirstChild("Head")
@@ -93,7 +92,7 @@ local function toggleESP(enabled)
     end
 end
 
--- GUI Setup
+-- GUI Setup (igual ao anterior)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GP7MODSGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -201,32 +200,35 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Speed Hack control
+-- Speed Hack: força WalkSpeed a cada frame
 RunService.Heartbeat:Connect(function()
     local character = LocalPlayer.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid then
-            if speedEnabled then
+            if speedEnabled and humanoid.WalkSpeed ~= walkSpeedValue then
                 humanoid.WalkSpeed = walkSpeedValue
-            else
+            elseif not speedEnabled and humanoid.WalkSpeed ~= normalWalkSpeed then
                 humanoid.WalkSpeed = normalWalkSpeed
             end
         end
     end
 end)
 
--- Infinite Jump clássico
+-- Infinite Jump clássico com debounce para evitar spam exagerado
+local canJump = true
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
-    if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard then
-        if input.KeyCode == Enum.KeyCode.Space then
-            local character = LocalPlayer.Character
-            if character then
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
+    if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid and canJump then
+                canJump = false
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                -- pequena espera para evitar múltiplos pulos muito rápidos
+                task.wait(0.15)
+                canJump = true
             end
         end
     end
@@ -252,4 +254,4 @@ Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
-print("GP7 MODS carregado com Speed Hack, Infinite Jump clássico e ESP verde!")
+print("GP7 MODS carregado com Speed Hack, Infinite Jump e ESP verde!")
