@@ -1,18 +1,17 @@
--- GP7 MODS - Steal a Brainrot
--- Menu verde e preto, botão flutuante com minimizar
--- Funções: Speed Hack, Pulo Infinito, ESP verde (nome mesmo invisível)
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
+
+local UIS = game:GetService("UserInputService")
 
 -- Variables
 local speedEnabled = false
 local jumpEnabled = false
 local espEnabled = false
 
-local UIS = game:GetService("UserInputService")
+local espLabels = {}
+local espBoxes = {}
 
 -- Create GUI
 local ScreenGui = Instance.new("ScreenGui")
@@ -132,35 +131,55 @@ FloatBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Função Speed Hack
+-- Speed Hack Loop para manter velocidade
+coroutine.wrap(function()
+    while true do
+        RunService.Heartbeat:Wait()
+        if speedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 40
+        elseif LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 16
+        end
+    end
+end)()
+
 SpeedBtn.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
     SpeedBtn.Text = "Speed Hack: " .. (speedEnabled and "ON" or "OFF")
-    if speedEnabled then
-        -- Aplicar velocidade maior
-        LocalPlayer.Character.Humanoid.WalkSpeed = 40
-    else
-        -- Resetar velocidade padrão
-        LocalPlayer.Character.Humanoid.WalkSpeed = 16
+end)
+
+-- Pulo infinito
+jumpEnabled = false
+RunService.Heartbeat:Connect(function()
+    if jumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+            local state = humanoid:GetState()
+            if state == Enum.HumanoidStateType.Freefall or state == Enum.HumanoidStateType.Landed or state == Enum.HumanoidStateType.Running or state == Enum.HumanoidStateType.RunningNoPhysics then
+                humanoid.Jump = true
+            end
+        end
     end
 end)
 
--- Função Pulo infinito
 JumpBtn.MouseButton1Click:Connect(function()
     jumpEnabled = not jumpEnabled
     JumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
 end)
 
--- ESP
-local espLabels = {}
-
+-- Funções para criar ESP (nome + caixa verde)
 local function createESP(plr)
-    if espLabels[plr] then return end -- Já existe
+    if espLabels[plr] or espBoxes[plr] then return end
 
-    local head = plr.Character and plr.Character:FindFirstChild("Head")
+    local character = plr.Character
+    if not character then return end
+    local head = character:FindFirstChild("Head")
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+
     if head then
+        -- Nome acima da cabeça (BillboardGui)
         local Billboard = Instance.new("BillboardGui")
-        Billboard.Name = "GP7ESP"
+        Billboard.Name = "GP7ESPName"
         Billboard.Adornee = head
         Billboard.Size = UDim2.new(0, 100, 0, 25)
         Billboard.StudsOffset = Vector3.new(0, 2.5, 0)
@@ -179,6 +198,21 @@ local function createESP(plr)
 
         espLabels[plr] = Billboard
     end
+
+    if hrp then
+        -- Caixa verde usando BoxHandleAdornment
+        local box = Instance.new("BoxHandleAdornment")
+        box.Name = "GP7ESPBox"
+        box.Adornee = hrp
+        box.AlwaysOnTop = true
+        box.ZIndex = 10
+        box.Size = Vector3.new(2, 5, 1) -- tamanho padrão do corpo Roblox (aprox)
+        box.Color3 = Color3.fromRGB(0, 255, 0)
+        box.Transparency = 0.5
+        box.Parent = hrp
+
+        espBoxes[plr] = box
+    end
 end
 
 local function removeESP(plr)
@@ -186,64 +220,38 @@ local function removeESP(plr)
         espLabels[plr]:Destroy()
         espLabels[plr] = nil
     end
+    if espBoxes[plr] then
+        espBoxes[plr]:Destroy()
+        espBoxes[plr] = nil
+    end
 end
 
 ESPBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
     ESPBtn.Text = "ESP Verde: " .. (espEnabled and "ON" or "OFF")
     if not espEnabled then
-        -- remover todos ESP
-        for plr, gui in pairs(espLabels) do
-            gui:Destroy()
+        for plr, _ in pairs(espLabels) do
+            removeESP(plr)
         end
-        espLabels = {}
     else
-        -- criar ESP para todos os players
         for _, plr in pairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer then
                 createESP(plr)
+                -- Atualizar se respawnar
+                plr.CharacterAdded:Connect(function()
+                    wait(1)
+                    if espEnabled then
+                        createESP(plr)
+                    end
+                end)
             end
         end
     end
 end)
 
--- Atualiza ESP quando jogador entra e sai
-Players.PlayerAdded:Connect(function(plr)
-    if espEnabled then
-        plr.CharacterAdded:Connect(function()
-            wait(1)
-            createESP(plr)
-        end)
-    end
-end)
-
+-- Remove ESP se player sair
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
--- Pulo infinito implementação
-RunService.Heartbeat:Connect(function()
-    if jumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then
-            if humanoid:GetState() == Enum.HumanoidStateType.Freefall or humanoid:GetState() == Enum.HumanoidStateType.Landed or humanoid:GetState() == Enum.HumanoidStateType.Running then
-                humanoid.Jump = true
-            end
-        end
-    end
-end)
-
--- Speed hack manutenção (se o personagem respawnar, aplica velocidade novamente)
-LocalPlayer.CharacterAdded:Connect(function(char)
-    wait(1)
-    if speedEnabled and char:FindFirstChildOfClass("Humanoid") then
-        char:FindFirstChildOfClass("Humanoid").WalkSpeed = 40
-    end
-end)
-
--- ESP funciona mesmo se invisível
--- O truque é usar BillboardGui parented na cabeça, que é visível para todos, mesmo com invisibilidade (capa)
--- O script já adiciona ESP nos jogadores, sem bloquear pela invisibilidade
-
--- Final
-print("GP7 MODS carregado! Use o botão flutuante para abrir/fechar o menu.")
+print("GP7 MODS atualizado e carregado!")
