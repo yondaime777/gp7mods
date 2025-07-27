@@ -11,7 +11,7 @@ local espEnabled = false
 local espLabels = {}
 local espBoxes = {}
 
-local walkSpeedValue = 70
+local walkSpeedValue = 50
 local normalWalkSpeed = 16
 
 -- ESP Functions
