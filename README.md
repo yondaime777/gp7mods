@@ -1,49 +1,84 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
+local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 
 local LocalPlayer = Players.LocalPlayer
+local humanoid
+local character
 
 local speedEnabled = false
 local jumpEnabled = false
 local espEnabled = false
 
+local walkSpeedValue = 70
+local normalWalkSpeed = 16
+
+-- Atualiza referência do personagem e humanoid
+local function updateCharacter()
+    character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    humanoid = character:WaitForChild("Humanoid")
+end
+
+updateCharacter()
+LocalPlayer.CharacterAdded:Connect(updateCharacter)
+
+-- Speed Hack: força a velocidade no Heartbeat
+RunService.Heartbeat:Connect(function()
+    if speedEnabled and humanoid then
+        if humanoid.WalkSpeed ~= walkSpeedValue then
+            humanoid.WalkSpeed = walkSpeedValue
+        end
+    elseif humanoid then
+        if humanoid.WalkSpeed ~= normalWalkSpeed then
+            humanoid.WalkSpeed = normalWalkSpeed
+        end
+    end
+end)
+
+-- Infinite jump usando JumpRequest (mais confiável)
+local function onJumpRequest()
+    if jumpEnabled and humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end
+
+UserInputService.JumpRequest:Connect(onJumpRequest)
+
+-- ESP básico para nomes verdes (caixa fica opcional pra depois)
 local espLabels = {}
 local espBoxes = {}
 
-local walkSpeedValue = 50
-local normalWalkSpeed = 16
-
--- ESP Functions
 local function createESP(plr)
-    if espLabels[plr] or espBoxes[plr] then return end
-    local character = plr.Character
-    if not character then return end
-    local head = character:FindFirstChild("Head")
-    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if espLabels[plr] then return end
+    local char = plr.Character
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
 
     if head then
-        local Billboard = Instance.new("BillboardGui")
-        Billboard.Name = "GP7ESPName"
-        Billboard.Adornee = head
-        Billboard.Size = UDim2.new(0, 100, 0, 25)
-        Billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-        Billboard.AlwaysOnTop = true
-        Billboard.Parent = head
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "GP7ESPName"
+        billboard.Adornee = head
+        billboard.Size = UDim2.new(0, 100, 0, 25)
+        billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = head
 
-        local Label = Instance.new("TextLabel")
-        Label.BackgroundTransparency = 1
-        Label.Size = UDim2.new(1, 0, 1, 0)
-        Label.TextColor3 = Color3.fromRGB(0, 255, 0)
-        Label.TextStrokeTransparency = 0
-        Label.Text = plr.Name
-        Label.Font = Enum.Font.GothamBold
-        Label.TextSize = 20
-        Label.Parent = Billboard
+        local label = Instance.new("TextLabel")
+        label.BackgroundTransparency = 1
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.TextColor3 = Color3.fromRGB(0, 255, 0)
+        label.TextStrokeTransparency = 0
+        label.Text = plr.Name
+        label.Font = Enum.Font.GothamBold
+        label.TextSize = 20
+        label.Parent = billboard
 
-        espLabels[plr] = Billboard
+        espLabels[plr] = billboard
     end
 
+    -- Caixa verde simples
     if hrp then
         local box = Instance.new("BoxHandleAdornment")
         box.Name = "GP7ESPBox"
@@ -92,24 +127,20 @@ local function toggleESP(enabled)
     end
 end
 
--- GUI Setup
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GP7MODSGUI"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
+-- GUI simples pra ligar e desligar funções
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 280, 0, 180)
-MainFrame.Position = UDim2.new(0.5, -140, 0.5, -90)
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "GP7MODS_GUI"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 250, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -80)
 MainFrame.BackgroundColor3 = Color3.fromRGB(0, 50, 0)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
 
-local Title = Instance.new("TextLabel")
-Title.Name = "Title"
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
 Title.BorderSizePixel = 0
@@ -117,153 +148,39 @@ Title.Text = "GP7 MODS"
 Title.TextColor3 = Color3.fromRGB(0, 255, 0)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 24
-Title.Parent = MainFrame
 
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Name = "MinimizeBtn"
-MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-MinimizeBtn.Position = UDim2.new(1, -30, 0, 0)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-MinimizeBtn.Text = "-"
-MinimizeBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.TextSize = 20
-MinimizeBtn.Parent = MainFrame
+local function createButton(text, posY)
+    local btn = Instance.new("TextButton", MainFrame)
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+    btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 22
+    btn.Text = text
+    return btn
+end
 
-local ButtonsFrame = Instance.new("Frame")
-ButtonsFrame.Name = "ButtonsFrame"
-ButtonsFrame.Size = UDim2.new(1, -20, 1, -40)
-ButtonsFrame.Position = UDim2.new(0, 10, 0, 35)
-ButtonsFrame.BackgroundTransparency = 1
-ButtonsFrame.Parent = MainFrame
+local speedBtn = createButton("Speed Hack: OFF", 40)
+local jumpBtn = createButton("Pulo Infinito: OFF", 85)
+local espBtn = createButton("ESP Verde: OFF", 130)
 
-local SpeedBtn = Instance.new("TextButton")
-SpeedBtn.Name = "SpeedBtn"
-SpeedBtn.Size = UDim2.new(1, 0, 0, 40)
-SpeedBtn.Position = UDim2.new(0, 0, 0, 0)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-SpeedBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-SpeedBtn.Font = Enum.Font.GothamBold
-SpeedBtn.TextSize = 22
-SpeedBtn.Text = "Speed Hack: OFF"
-SpeedBtn.Parent = ButtonsFrame
-
-local JumpBtn = Instance.new("TextButton")
-JumpBtn.Name = "JumpBtn"
-JumpBtn.Size = UDim2.new(1, 0, 0, 40)
-JumpBtn.Position = UDim2.new(0, 0, 0, 45)
-JumpBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-JumpBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-JumpBtn.Font = Enum.Font.GothamBold
-JumpBtn.TextSize = 22
-JumpBtn.Text = "Pulo Infinito: OFF"
-JumpBtn.Parent = ButtonsFrame
-
-local ESPBtn = Instance.new("TextButton")
-ESPBtn.Name = "ESPBtn"
-ESPBtn.Size = UDim2.new(1, 0, 0, 40)
-ESPBtn.Position = UDim2.new(0, 0, 0, 90)
-ESPBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-ESPBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-ESPBtn.Font = Enum.Font.GothamBold
-ESPBtn.TextSize = 22
-ESPBtn.Text = "ESP Verde: OFF"
-ESPBtn.Parent = ButtonsFrame
-
-local FloatBtn = Instance.new("TextButton")
-FloatBtn.Name = "FloatBtn"
-FloatBtn.Size = UDim2.new(0, 60, 0, 30)
-FloatBtn.Position = UDim2.new(0, 10, 0.7, 0)
-FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-FloatBtn.Text = "GP7"
-FloatBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-FloatBtn.Font = Enum.Font.GothamBold
-FloatBtn.TextSize = 20
-FloatBtn.Parent = ScreenGui
-FloatBtn.Active = true
-FloatBtn.Draggable = true
-
-local minimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-    if not minimized then
-        MainFrame.Size = UDim2.new(0, 280, 0, 30)
-        ButtonsFrame.Visible = false
-        minimized = true
-    else
-        MainFrame.Size = UDim2.new(0, 280, 0, 180)
-        ButtonsFrame.Visible = true
-        minimized = false
-    end
-end)
-
-FloatBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
--- Speed Hack melhorado
-RunService.Heartbeat:Connect(function()
-    local character = LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if humanoid and hrp then
-            if speedEnabled then
-                if humanoid.WalkSpeed ~= walkSpeedValue then
-                    humanoid.WalkSpeed = walkSpeedValue
-                end
-                -- Tentativa extra: ajustar velocity para frente na direção do movimento
-                local moveDir = humanoid.MoveDirection
-                if moveDir.Magnitude > 0 then
-                    hrp.Velocity = moveDir.Unit * walkSpeedValue * 5 + Vector3.new(0, hrp.Velocity.Y, 0)
-                end
-            else
-                if humanoid.WalkSpeed ~= normalWalkSpeed then
-                    humanoid.WalkSpeed = normalWalkSpeed
-                end
-            end
-        end
-    end
-end)
-
--- Infinite jump manual que move o personagem para cima ao apertar espaço
-local jumpCooldown = 0.15
-local lastJumpTime = 0
-
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    if jumpEnabled and input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
-        local now = tick()
-        if now - lastJumpTime >= jumpCooldown then
-            lastJumpTime = now
-            local character = LocalPlayer.Character
-            if character then
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 10, 0) -- sobe 10 studs instantâneo (ajuste se quiser)
-                end
-            end
-        end
-    end
-end)
-
-SpeedBtn.MouseButton1Click:Connect(function()
+speedBtn.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
-    SpeedBtn.Text = "Speed Hack: " .. (speedEnabled and "ON" or "OFF")
+    speedBtn.Text = "Speed Hack: " .. (speedEnabled and "ON" or "OFF")
 end)
 
-JumpBtn.MouseButton1Click:Connect(function()
+jumpBtn.MouseButton1Click:Connect(function()
     jumpEnabled = not jumpEnabled
-    JumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
+    jumpBtn.Text = "Pulo Infinito: " .. (jumpEnabled and "ON" or "OFF")
 end)
 
-ESPBtn.MouseButton1Click:Connect(function()
+espBtn.MouseButton1Click:Connect(function()
     espEnabled = not espEnabled
-    ESPBtn.Text = "ESP Verde: " .. (espEnabled and "ON" or "OFF")
+    espBtn.Text = "ESP Verde: " .. (espEnabled and "ON" or "OFF")
     toggleESP(espEnabled)
 end)
 
 Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
-
-print("GP7 MODS carregado com Speed Hack melhorado, Infinite Jump manual e ESP verde!")
