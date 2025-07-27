@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -11,8 +12,7 @@ local espEnabled = false
 local espLabels = {}
 local espBoxes = {}
 
-local speedVelocityValue = 70 -- velocidade ajustada para 70
-local jumpPowerDefault = 50
+local speedVelocityValue = 30 -- velocidade reduzida
 
 local function createESP(plr)
     if espLabels[plr] or espBoxes[plr] then return end
@@ -92,7 +92,6 @@ local function toggleESP(enabled)
     end
 end
 
--- Criar GUI
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GP7MODSGUI"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -224,29 +223,50 @@ RunService.Heartbeat:Connect(function()
 
             if not jumpEnabled then
                 humanoid.JumpPower = 50
+                humanoid.PlatformStand = false
+                if hrp:FindFirstChild("BodyForce") then
+                    hrp.BodyForce:Destroy()
+                end
             end
         end
     end
 end)
 
--- Loop forçado para pulo infinito
+-- Pulo infinito com manipulação de gravidade local (adiciona BodyForce pra neutralizar gravidade e aplicar impulso)
 coroutine.wrap(function()
     while true do
         RunService.Heartbeat:Wait()
         if jumpEnabled and LocalPlayer.Character then
-            local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
+            local character = LocalPlayer.Character
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid and hrp then
                 humanoid.JumpPower = 100
-                humanoid.Jump = true
-                wait(0.1)
-            else
-                wait(0.5)
+                humanoid.PlatformStand = false
+
+                -- Remove BodyVelocity se já existir para evitar acumular
+                if hrp:FindFirstChild("BodyForce") then
+                    hrp.BodyForce:Destroy()
+                end
+
+                -- Adiciona BodyForce para neutralizar gravidade
+                local bodyForce = Instance.new("BodyForce")
+                bodyForce.Force = Vector3.new(0, hrp:GetMass() * workspace.Gravity, 0)
+                bodyForce.Parent = hrp
+
+                -- Força o pulo aplicando um impulso para cima
+                hrp.Velocity = Vector3.new(hrp.Velocity.X, 70, hrp.Velocity.Z)
             end
         else
             if LocalPlayer.Character then
                 local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if humanoid and hrp then
                     humanoid.JumpPower = 50
+                    humanoid.PlatformStand = false
+                    if hrp:FindFirstChild("BodyForce") then
+                        hrp.BodyForce:Destroy()
+                    end
                 end
             end
             wait(0.5)
@@ -274,4 +294,4 @@ Players.PlayerRemoving:Connect(function(plr)
     removeESP(plr)
 end)
 
-print("GP7 MODS carregado com Speed Hack (70), Pulo Infinito e ESP gigante.")
+print("GP7 MODS carregado com Speed Hack (30), Pulo Infinito com gravidade neutra e ESP gigante.")
