@@ -1,121 +1,85 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
 local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local backpack = player:WaitForChild("Backpack")
 
-local speedCoilName = "Speed Coil"
-local gravityCoilName = "Gravity Coil"
+local SPEED_VALUE = 40
+local NORMAL_SPEED = 16
+local ITEM_NAME = "Speed Coil" -- nome do item de velocidade
+local speedOn = false
 
-local function buyItem(itemName)
-    local success, err = pcall(function()
-        local net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Net"):WaitForChild("RF/CoinsShopService/RequestBuy")
-        net:InvokeServer(itemName)
-    end)
-    if not success then
-        warn("Erro ao comprar "..itemName..": "..tostring(err))
+-- GUI simples
+local playerGui = player:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "GP7_Speed"
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 160, 0, 60)
+frame.Position = UDim2.new(0, 20, 0.5, -30)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 2
+frame.Active = true
+frame.Draggable = true
+
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Size = UDim2.new(1, 0, 1, 0)
+toggleBtn.Text = "Ativar Speed Hack"
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 20
+
+-- Compra o item
+local function comprarItem()
+    local remote = ReplicatedStorage:FindFirstChild("BuySpeedCoil") -- nome pode variar
+    if remote and remote:IsA("RemoteEvent") then
+        remote:FireServer()
     end
 end
 
-local function equipItem(itemName)
-    local backpack = player:WaitForChild("Backpack")
-    local character = player.Character
-    if not backpack or not character then return end
-
-    local item = backpack:FindFirstChild(itemName)
-    if item then
-        player.Character.Humanoid:EquipTool(item)
+-- Equipa o item
+local function equiparItem()
+    local ferramenta = backpack:FindFirstChild(ITEM_NAME)
+    if ferramenta then
+        ferramenta.Parent = character
     end
 end
 
-local speedEnabled = false
-local jumpEnabled = false
-
-local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-ScreenGui.Name = "GP7MenuGui"
-
-local mainFrame = Instance.new("Frame", ScreenGui)
-mainFrame.Size = UDim2.new(0, 220, 0, 150)
-mainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
-mainFrame.BackgroundColor3 = Color3.fromRGB(35, 0, 0)
-mainFrame.BorderSizePixel = 0
-
-local title = Instance.new("TextLabel", mainFrame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.Text = "GP7 MENU"
-title.TextColor3 = Color3.new(1, 0, 0)
-title.Font = Enum.Font.GothamBold
-title.TextScaled = true
-
-local btnSpeed = Instance.new("TextButton", mainFrame)
-btnSpeed.Size = UDim2.new(0.9, 0, 0, 40)
-btnSpeed.Position = UDim2.new(0.05, 0, 0, 50)
-btnSpeed.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-btnSpeed.TextColor3 = Color3.new(1,1,1)
-btnSpeed.Font = Enum.Font.GothamBold
-btnSpeed.TextScaled = true
-btnSpeed.Text = "Speed Hack: OFF"
-
-local btnJump = Instance.new("TextButton", mainFrame)
-btnJump.Size = UDim2.new(0.9, 0, 0, 40)
-btnJump.Position = UDim2.new(0.05, 0, 0, 100)
-btnJump.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-btnJump.TextColor3 = Color3.new(1,1,1)
-btnJump.Font = Enum.Font.GothamBold
-btnJump.TextScaled = true
-btnJump.Text = "Pulo Infinito: OFF"
-
-local function applySpeed()
-    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = 50
-    end
+-- Ativa o speed
+local function ativarSpeed()
+    comprarItem()
+    task.wait(0.5)
+    equiparItem()
+    speedOn = true
+    humanoid.WalkSpeed = SPEED_VALUE
+    toggleBtn.Text = "Desativar Speed Hack"
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 end
 
-local function applyJump()
-    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-        player.Character.Humanoid.JumpPower = 100
-    end
+-- Desativa o speed
+local function desativarSpeed()
+    speedOn = false
+    humanoid.WalkSpeed = NORMAL_SPEED
+    toggleBtn.Text = "Ativar Speed Hack"
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 end
 
-btnSpeed.MouseButton1Click:Connect(function()
-    speedEnabled = not speedEnabled
-    if speedEnabled then
-        buyItem(speedCoilName)
-        wait(0.5) -- espera o item entrar no backpack
-        equipItem(speedCoilName)
-        applySpeed()
-        btnSpeed.Text = "Speed Hack: ON"
-    else
-        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 16
-        end
-        btnSpeed.Text = "Speed Hack: OFF"
+-- Mantém velocidade mesmo sem o item
+RunService.Heartbeat:Connect(function()
+    if speedOn and humanoid.WalkSpeed ~= SPEED_VALUE then
+        humanoid.WalkSpeed = SPEED_VALUE
     end
 end)
 
-btnJump.MouseButton1Click:Connect(function()
-    jumpEnabled = not jumpEnabled
-    if jumpEnabled then
-        buyItem(gravityCoilName)
-        wait(0.5)
-        equipItem(gravityCoilName)
-        applyJump()
-        btnJump.Text = "Pulo Infinito: ON"
+-- Clique do botão
+toggleBtn.MouseButton1Click:Connect(function()
+    if speedOn then
+        desativarSpeed()
     else
-        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-            player.Character.Humanoid.JumpPower = 50
-        end
-        btnJump.Text = "Pulo Infinito: OFF"
-    end
-end)
-
-player.CharacterAdded:Connect(function()
-    wait(1)
-    if speedEnabled then
-        equipItem(speedCoilName)
-        applySpeed()
-    end
-    if jumpEnabled then
-        equipItem(gravityCoilName)
-        applyJump()
+        ativarSpeed()
     end
 end)
