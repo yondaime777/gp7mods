@@ -1,36 +1,132 @@
--- GP7 MENU Script Atualizado
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
-local Players = game:GetService("Players") local RunService = game:GetService("RunService") local UserInputService = game:GetService("UserInputService") local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
 
--- Criar GUI principal local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui")) gui.Name = "GP7Menu" gui.ResetOnSpawn = false
+-- Criar GUI principal
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.Name = "GP7_MODS"
+ScreenGui.ResetOnSpawn = false
 
-local frame = Instance.new("Frame", gui) frame.Size = UDim2.new(0, 220, 0, 260) frame.Position = UDim2.new(0, 20, 0.4, 0) frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) frame.BackgroundTransparency = 0.4 frame.BorderSizePixel = 0 frame.Active = true frame.Draggable = true
+-- Cores RGB animadas
+local function getRainbowColor(timeOffset)
+	local r = math.sin(tick() + timeOffset) * 127 + 128
+	local g = math.sin(tick() + timeOffset + 2) * 127 + 128
+	local b = math.sin(tick() + timeOffset + 4) * 127 + 128
+	return Color3.fromRGB(r, g, b)
+end
 
-local title = Instance.new("TextLabel", frame) title.Size = UDim2.new(1, 0, 0, 40) title.Text = "GP7 MODS" title.BackgroundColor3 = Color3.fromRGB(0, 0, 0) title.Font = Enum.Font.Arcade -- Fonte quadrada
+-- Botão flutuante para abrir o menu
+local FloatButton = Instance.new("TextButton", ScreenGui)
+FloatButton.Size = UDim2.new(0, 120, 0, 40)
+FloatButton.Position = UDim2.new(0, 20, 0.5, -100)
+FloatButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+FloatButton.Text = "GP7 MODS"
+FloatButton.TextColor3 = Color3.new(1,1,1)
+FloatButton.Font = Enum.Font.SourceSansBold
+FloatButton.TextSize = 16
+FloatButton.Draggable = true
+FloatButton.Active = true
 
--- Ciclo RGB spawn(function() while true do for i = 0, 255, 5 do title.TextColor3 = Color3.fromHSV(i / 255, 1, 1) task.wait() end end end)
+-- Menu principal
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 240, 0, 180)
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -90)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-title.TextScaled = true
+-- Título com efeito RGB
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "GP7 MODS"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Botão flutuante minimizar local floatBtn = Instance.new("TextButton", gui) floatBtn.Text = "GP7" floatBtn.Size = UDim2.new(0, 60, 0, 35) floatBtn.Position = UDim2.new(0, 10, 0, 10) floatBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0) floatBtn.TextColor3 = Color3.new(0, 0, 0) floatBtn.Visible = false floatBtn.Font = Enum.Font.Arcade floatBtn.TextScaled = true
+-- Botão minimizar
+local MinBtn = Instance.new("TextButton", MainFrame)
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -35, 0, 0)
+MinBtn.Text = "-"
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.TextSize = 20
+MinBtn.TextColor3 = Color3.new(1,1,1)
+MinBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 
-floatBtn.MouseButton1Click:Connect(function() frame.Visible = true floatBtn.Visible = false end)
+-- Botão Velocidade Rápida
+local FastSpeed = Instance.new("TextButton", MainFrame)
+FastSpeed.Size = UDim2.new(1, -20, 0, 40)
+FastSpeed.Position = UDim2.new(0, 10, 0, 40)
+FastSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+FastSpeed.Text = "Velocidade Rápida (50)"
+FastSpeed.Font = Enum.Font.SourceSansBold
+FastSpeed.TextSize = 16
+FastSpeed.TextColor3 = Color3.new(1,1,1)
 
-local function createButton(text, posY, callback) local btn = Instance.new("TextButton", frame) btn.Size = UDim2.new(1, -20, 0, 40) btn.Position = UDim2.new(0, 10, 0, posY) btn.BackgroundColor3 = Color3.fromRGB(50, 0, 0) btn.TextColor3 = Color3.fromRGB(255, 0, 0) btn.Font = Enum.Font.Arcade btn.TextScaled = true btn.Text = text btn.BorderSizePixel = 0 btn.MouseButton1Click:Connect(callback) return btn end
+-- Botão Velocidade Ultra
+local UltraSpeed = Instance.new("TextButton", MainFrame)
+UltraSpeed.Size = UDim2.new(1, -20, 0, 40)
+UltraSpeed.Position = UDim2.new(0, 10, 0, 90)
+UltraSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+UltraSpeed.Text = "Velocidade Ultra (80)"
+UltraSpeed.Font = Enum.Font.SourceSansBold
+UltraSpeed.TextSize = 16
+UltraSpeed.TextColor3 = Color3.new(1,1,1)
 
-createButton("Minimizar", 220, function() frame.Visible = false floatBtn.Visible = true end)
+-- Botão Pulo Infinito
+local InfJump = Instance.new("TextButton", MainFrame)
+InfJump.Size = UDim2.new(1, -20, 0, 40)
+InfJump.Position = UDim2.new(0, 10, 0, 140)
+InfJump.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+InfJump.Text = "Ativar Pulo Infinito"
+InfJump.Font = Enum.Font.SourceSansBold
+InfJump.TextSize = 16
+InfJump.TextColor3 = Color3.new(1,1,1)
 
--- === Variáveis para Speed Hack === local speedState = { normal = 16, rapido = 40, ultra = 60 } local currentSpeed = "normal" local speedBtn
+-- Abrir/Fechar menu
+FloatButton.MouseButton1Click:Connect(function()
+	MainFrame.Visible = not MainFrame.Visible
+end)
 
-local function setSpeed(level) currentSpeed = level local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid.WalkSpeed = speedState[level] end end
+MinBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = false
+end)
 
-createButton("Velocidade Rápida", 60, function(btn) if currentSpeed ~= "rapido" then setSpeed("rapido") btn.Text = "Velocidade Rápida ON" else setSpeed("normal") btn.Text = "Velocidade Rápida" end end)
+-- Botões de velocidade
+FastSpeed.MouseButton1Click:Connect(function()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+	hum.WalkSpeed = 50
+end)
 
-createButton("Velocidade Ultra Rápida", 110, function(btn) if currentSpeed ~= "ultra" then setSpeed("ultra") btn.Text = "Velocidade Ultra Rápida ON" else setSpeed("normal") btn.Text = "Velocidade Ultra Rápida" end end)
+UltraSpeed.MouseButton1Click:Connect(function()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hum = char:WaitForChild("Humanoid")
+	hum.WalkSpeed = 80
+end)
 
--- === Infinite Jump === local infiniteJumpOn = false local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+-- Pulo Infinito
+local infiniteJump = false
+InfJump.MouseButton1Click:Connect(function()
+	infiniteJump = not infiniteJump
+	InfJump.Text = infiniteJump and "Pulo Infinito ON" or "Pulo Infinito OFF"
+end)
 
-UserInputService.JumpRequest:Connect(function() if infiniteJumpOn then humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end end end)
+UserInputService.JumpRequest:Connect(function()
+	if infiniteJump then
+		local char = player.Character or player.CharacterAdded:Wait()
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if hum then hum:ChangeState("Jumping") end
+	end
+end)
 
-createButton("Pulo Infinito", 160, function(btn) infiniteJumpOn = not infiniteJumpOn btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito" end)
-
+-- Atualizar título RGB
+RunService.RenderStepped:Connect(function()
+	Title.TextColor3 = getRainbowColor(0)
+end)
