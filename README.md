@@ -11,122 +11,114 @@ local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 ScreenGui.Name = "GP7_MODS"
 ScreenGui.ResetOnSpawn = false
 
--- Cores RGB animadas
-local function getRainbowColor(timeOffset)
-	local r = math.sin(tick() + timeOffset) * 127 + 128
-	local g = math.sin(tick() + timeOffset + 2) * 127 + 128
-	local b = math.sin(tick() + timeOffset + 4) * 127 + 128
+-- Função RGB animada
+local function getRainbowColor(offset)
+	local r = math.sin(tick() + offset) * 127 + 128
+	local g = math.sin(tick() + offset + 2) * 127 + 128
+	local b = math.sin(tick() + offset + 4) * 127 + 128
 	return Color3.fromRGB(r, g, b)
 end
 
--- Botão flutuante para abrir o menu
+-- Botão flutuante redondo com "GP7 MODS"
 local FloatButton = Instance.new("TextButton", ScreenGui)
-FloatButton.Size = UDim2.new(0, 120, 0, 40)
-FloatButton.Position = UDim2.new(0, 20, 0.5, -100)
+FloatButton.Size = UDim2.new(0, 120, 0, 60)
+FloatButton.Position = UDim2.new(0, 20, 0.5, -30)
 FloatButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 FloatButton.Text = "GP7 MODS"
 FloatButton.TextColor3 = Color3.new(1,1,1)
 FloatButton.Font = Enum.Font.SourceSansBold
-FloatButton.TextSize = 16
+FloatButton.TextSize = 18
 FloatButton.Draggable = true
 FloatButton.Active = true
+FloatButton.BorderSizePixel = 0
+local fcorner = Instance.new("UICorner", FloatButton)
+fcorner.CornerRadius = UDim.new(1, 0)
 
 -- Menu principal
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 240, 0, 180)
-MainFrame.Position = UDim2.new(0.5, -120, 0.5, -90)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Size = UDim2.new(0, 260, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
--- Título com efeito RGB
+-- Título
 local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, -40, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 5)
 Title.BackgroundTransparency = 1
 Title.Text = "GP7 MODS"
 Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 20
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Botão minimizar
 local MinBtn = Instance.new("TextButton", MainFrame)
 MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -35, 0, 0)
+MinBtn.Position = UDim2.new(1, -35, 0, 5)
 MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.SourceSansBold
 MinBtn.TextSize = 20
 MinBtn.TextColor3 = Color3.new(1,1,1)
 MinBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+MinBtn.BorderSizePixel = 0
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
 
--- Botão Velocidade Rápida
-local FastSpeed = Instance.new("TextButton", MainFrame)
-FastSpeed.Size = UDim2.new(1, -20, 0, 40)
-FastSpeed.Position = UDim2.new(0, 10, 0, 40)
-FastSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-FastSpeed.Text = "Velocidade Rápida (50)"
-FastSpeed.Font = Enum.Font.SourceSansBold
-FastSpeed.TextSize = 16
-FastSpeed.TextColor3 = Color3.new(1,1,1)
+-- Botão velocidade rápida
+local SpeedBtn = Instance.new("TextButton", MainFrame)
+SpeedBtn.Size = UDim2.new(1, -20, 0, 40)
+SpeedBtn.Position = UDim2.new(0, 10, 0, 40)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+SpeedBtn.Text = "Velocidade Rápida (50)"
+SpeedBtn.Font = Enum.Font.SourceSansBold
+SpeedBtn.TextSize = 16
+SpeedBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 8)
 
--- Botão Velocidade Ultra
-local UltraSpeed = Instance.new("TextButton", MainFrame)
-UltraSpeed.Size = UDim2.new(1, -20, 0, 40)
-UltraSpeed.Position = UDim2.new(0, 10, 0, 90)
-UltraSpeed.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-UltraSpeed.Text = "Velocidade Ultra (80)"
-UltraSpeed.Font = Enum.Font.SourceSansBold
-UltraSpeed.TextSize = 16
-UltraSpeed.TextColor3 = Color3.new(1,1,1)
+-- Botão velocidade ultra
+local UltraBtn = Instance.new("TextButton", MainFrame)
+UltraBtn.Size = UDim2.new(1, -20, 0, 40)
+UltraBtn.Position = UDim2.new(0, 10, 0, 90)
+UltraBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+UltraBtn.Text = "Velocidade Ultra Rápida (80)"
+UltraBtn.Font = Enum.Font.SourceSansBold
+UltraBtn.TextSize = 16
+UltraBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", UltraBtn).CornerRadius = UDim.new(0, 8)
 
--- Botão Pulo Infinito
-local InfJump = Instance.new("TextButton", MainFrame)
-InfJump.Size = UDim2.new(1, -20, 0, 40)
-InfJump.Position = UDim2.new(0, 10, 0, 140)
-InfJump.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InfJump.Text = "Ativar Pulo Infinito"
-InfJump.Font = Enum.Font.SourceSansBold
-InfJump.TextSize = 16
-InfJump.TextColor3 = Color3.new(1,1,1)
+-- Botão pulo infinito
+local JumpBtn = Instance.new("TextButton", MainFrame)
+JumpBtn.Size = UDim2.new(1, -20, 0, 40)
+JumpBtn.Position = UDim2.new(0, 10, 0, 140)
+JumpBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+JumpBtn.Text = "Pulo Infinito"
+JumpBtn.Font = Enum.Font.SourceSansBold
+JumpBtn.TextSize = 16
+JumpBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", JumpBtn).CornerRadius = UDim.new(0, 8)
 
--- Abrir/Fechar menu
+-- Mostrar/ocultar menu
 FloatButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = not MainFrame.Visible
+	MainFrame.Visible = true
+	FloatButton.Visible = false
 end)
 
 MinBtn.MouseButton1Click:Connect(function()
 	MainFrame.Visible = false
+	FloatButton.Visible = true
 end)
 
--- Botões de velocidade
-FastSpeed.MouseButton1Click:Connect(function()
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hum = char:WaitForChild("Humanoid")
-	hum.WalkSpeed = 50
-end)
-
-UltraSpeed.MouseButton1Click:Connect(function()
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hum = char:WaitForChild("Humanoid")
-	hum.WalkSpeed = 80
-end)
-
--- Pulo Infinito
-local infiniteJump = false
-InfJump.MouseButton1Click:Connect(function()
-	infiniteJump = not infiniteJump
-	InfJump.Text = infiniteJump and "Pulo Infinito ON" or "Pulo Infinito OFF"
-end)
-
-UserInputService.JumpRequest:Connect(function()
-	if infiniteJump then
-		local char = player.Character or player.CharacterAdded:Wait()
-		local hum = char:FindFirstChildOfClass("Humanoid")
-		if hum then hum:ChangeState("Jumping") end
-	end
-end)
-
--- Atualizar título RGB
+-- RGB animado em tudo
 RunService.RenderStepped:Connect(function()
-	Title.TextColor3 = getRainbowColor(0)
+	local color = getRainbowColor(0)
+	MainFrame.BackgroundColor3 = color
+	Title.TextColor3 = color
+	SpeedBtn.BackgroundColor3 = color
+	UltraBtn.BackgroundColor3 = color
+	JumpBtn.BackgroundColor3 = color
+	MinBtn.BackgroundColor3 = color
+	FloatButton.BackgroundColor3 = color
 end)
