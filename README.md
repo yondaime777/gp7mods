@@ -6,12 +6,12 @@ local player = Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 
--- Criar GUI principal
+-- Criar GUI
 local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 ScreenGui.Name = "GP7_MODS"
 ScreenGui.ResetOnSpawn = false
 
--- Função RGB animada
+-- Função RGB
 local function getRainbowColor(offset)
 	local r = math.sin(tick() + offset) * 127 + 128
 	local g = math.sin(tick() + offset + 2) * 127 + 128
@@ -19,7 +19,7 @@ local function getRainbowColor(offset)
 	return Color3.fromRGB(r, g, b)
 end
 
--- Botão flutuante redondo com "GP7 MODS"
+-- Botão flutuante
 local FloatButton = Instance.new("TextButton", ScreenGui)
 FloatButton.Size = UDim2.new(0, 120, 0, 60)
 FloatButton.Position = UDim2.new(0, 20, 0.5, -30)
@@ -31,8 +31,7 @@ FloatButton.TextSize = 18
 FloatButton.Draggable = true
 FloatButton.Active = true
 FloatButton.BorderSizePixel = 0
-local fcorner = Instance.new("UICorner", FloatButton)
-fcorner.CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", FloatButton).CornerRadius = UDim.new(1, 0)
 
 -- Menu principal
 local MainFrame = Instance.new("Frame", ScreenGui)
@@ -67,40 +66,26 @@ MinBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 MinBtn.BorderSizePixel = 0
 Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
 
--- Botão velocidade rápida
-local SpeedBtn = Instance.new("TextButton", MainFrame)
-SpeedBtn.Size = UDim2.new(1, -20, 0, 40)
-SpeedBtn.Position = UDim2.new(0, 10, 0, 40)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-SpeedBtn.Text = "Velocidade Rápida (50)"
-SpeedBtn.Font = Enum.Font.SourceSansBold
-SpeedBtn.TextSize = 16
-SpeedBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 8)
+-- Criar botão com estilo
+local function createButton(text, y)
+	local btn = Instance.new("TextButton", MainFrame)
+	btn.Size = UDim2.new(1, -20, 0, 40)
+	btn.Position = UDim2.new(0, 10, 0, y)
+	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	btn.Text = text
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextSize = 16
+	btn.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+	return btn
+end
 
--- Botão velocidade ultra
-local UltraBtn = Instance.new("TextButton", MainFrame)
-UltraBtn.Size = UDim2.new(1, -20, 0, 40)
-UltraBtn.Position = UDim2.new(0, 10, 0, 90)
-UltraBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-UltraBtn.Text = "Velocidade Ultra Rápida (80)"
-UltraBtn.Font = Enum.Font.SourceSansBold
-UltraBtn.TextSize = 16
-UltraBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", UltraBtn).CornerRadius = UDim.new(0, 8)
+-- Botões
+local SpeedBtn = createButton("Velocidade Rápida: Desativado", 40)
+local UltraBtn = createButton("Velocidade Ultra: Desativado", 90)
+local JumpBtn = createButton("Pulo Infinito: Desativado", 140)
 
--- Botão pulo infinito
-local JumpBtn = Instance.new("TextButton", MainFrame)
-JumpBtn.Size = UDim2.new(1, -20, 0, 40)
-JumpBtn.Position = UDim2.new(0, 10, 0, 140)
-JumpBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-JumpBtn.Text = "Pulo Infinito"
-JumpBtn.Font = Enum.Font.SourceSansBold
-JumpBtn.TextSize = 16
-JumpBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", JumpBtn).CornerRadius = UDim.new(0, 8)
-
--- Mostrar/ocultar menu
+-- Mostrar/ocultar
 FloatButton.MouseButton1Click:Connect(function()
 	MainFrame.Visible = true
 	FloatButton.Visible = false
@@ -111,7 +96,43 @@ MinBtn.MouseButton1Click:Connect(function()
 	FloatButton.Visible = true
 end)
 
--- RGB animado em tudo
+-- Funções
+local speedOn = false
+local ultraOn = false
+local jumpOn = false
+
+SpeedBtn.MouseButton1Click:Connect(function()
+	speedOn = not speedOn
+	ultraOn = false
+	SpeedBtn.Text = "Velocidade Rápida: " .. (speedOn and "Ativado" or "Desativado")
+	UltraBtn.Text = "Velocidade Ultra: Desativado"
+	humanoid.WalkSpeed = speedOn and 50 or 16
+end)
+
+UltraBtn.MouseButton1Click:Connect(function()
+	ultraOn = not ultraOn
+	speedOn = false
+	UltraBtn.Text = "Velocidade Ultra: " .. (ultraOn and "Ativado" or "Desativado")
+	SpeedBtn.Text = "Velocidade Rápida: Desativado"
+	humanoid.WalkSpeed = ultraOn and 80 or 16
+end)
+
+JumpBtn.MouseButton1Click:Connect(function()
+	jumpOn = not jumpOn
+	JumpBtn.Text = "Pulo Infinito: " .. (jumpOn and "Ativado" or "Desativado")
+end)
+
+UserInputService.JumpRequest:Connect(function()
+	if jumpOn then
+		local char = player.Character
+		if char then
+			local hum = char:FindFirstChildOfClass("Humanoid")
+			if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+		end
+	end
+end)
+
+-- Animação RGB
 RunService.RenderStepped:Connect(function()
 	local color = getRainbowColor(0)
 	MainFrame.BackgroundColor3 = color
