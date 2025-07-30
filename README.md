@@ -3,143 +3,144 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
--- Criar GUI
-local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-ScreenGui.Name = "GP7_MODS"
-ScreenGui.ResetOnSpawn = false
+-- Tela principal
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "GP7MODS"
+gui.ResetOnSpawn = false
 
--- Função RGB
-local function getRainbowColor(offset)
-	local r = math.sin(tick() + offset) * 127 + 128
-	local g = math.sin(tick() + offset + 2) * 127 + 128
-	local b = math.sin(tick() + offset + 4) * 127 + 128
-	return Color3.fromRGB(r, g, b)
+-- RGB função
+local function applyRGB(obj)
+	local hue = 0
+	RunService.RenderStepped:Connect(function()
+		hue = (hue + 1) % 255
+		local color = Color3.fromHSV(hue / 255, 1, 1)
+		obj.BackgroundColor3 = color
+		if obj:IsA("TextButton") or obj:IsA("TextLabel") then
+			obj.TextColor3 = Color3.new(1,1,1)
+		end
+	end)
 end
 
--- Botão flutuante
-local FloatButton = Instance.new("TextButton", ScreenGui)
-FloatButton.Size = UDim2.new(0, 120, 0, 60)
-FloatButton.Position = UDim2.new(0, 20, 0.5, -30)
-FloatButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-FloatButton.Text = "GP7 MODS"
-FloatButton.TextColor3 = Color3.new(1,1,1)
-FloatButton.Font = Enum.Font.SourceSansBold
-FloatButton.TextSize = 18
-FloatButton.Draggable = true
-FloatButton.Active = true
-FloatButton.BorderSizePixel = 0
-Instance.new("UICorner", FloatButton).CornerRadius = UDim.new(1, 0)
+-- Botão flutuante (minimizado)
+local floatButton = Instance.new("TextButton")
+floatButton.Size = UDim2.new(0, 50, 0, 50)
+floatButton.Position = UDim2.new(0, 20, 0.5, 0)
+floatButton.BackgroundTransparency = 0
+floatButton.Text = "+"
+floatButton.TextSize = 30
+floatButton.Font = Enum.Font.SourceSansBold
+floatButton.ZIndex = 1000
+floatButton.Parent = gui
+floatButton.Visible = true
+floatButton.ClipsDescendants = true
+floatButton.TextColor3 = Color3.new(1, 1, 1)
+floatButton.BackgroundColor3 = Color3.new(1, 0, 0)
+floatButton.AutoButtonColor = true
+floatButton.BorderSizePixel = 0
+floatButton.AnchorPoint = Vector2.new(0.5, 0.5)
+floatButton.TextWrapped = true
+floatButton.Name = "FloatingButton"
+floatButton.BackgroundTransparency = 0
+floatButton.SizeConstraint = Enum.SizeConstraint.RelativeXY
+floatButton.BorderMode = Enum.BorderMode.Outline
+floatButton.ClipsDescendants = false
+floatButton.TextStrokeTransparency = 0.5
+floatButton.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+floatButton.TextScaled = true
+floatButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+floatButton.TextColor3 = Color3.new(1, 1, 1)
+floatButton.UICorner = Instance.new("UICorner", floatButton)
+floatButton.UICorner.CornerRadius = UDim.new(1, 0)
 
--- Menu principal
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 260, 0, 200)
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.Visible = false
-MainFrame.Active = true
-MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+applyRGB(floatButton)
+
+-- Frame principal
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 250, 0, 250)
+frame.Position = UDim2.new(0, 80, 0.5, -125)
+frame.AnchorPoint = Vector2.new(0, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Parent = gui
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 10)
+
+applyRGB(frame)
 
 -- Título
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Size = UDim2.new(1, -40, 0, 30)
-Title.Position = UDim2.new(0, 10, 0, 5)
-Title.BackgroundTransparency = 1
-Title.Text = "GP7 MODS"
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 20
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.TextXAlignment = Enum.TextXAlignment.Left
+local title = Instance.new("TextLabel")
+title.Text = "GP7 MODS"
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Font = Enum.Font.Code
+title.TextSize = 24
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+title.Parent = frame
 
--- Botão minimizar
-local MinBtn = Instance.new("TextButton", MainFrame)
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -35, 0, 5)
-MinBtn.Text = "-"
-MinBtn.Font = Enum.Font.SourceSansBold
-MinBtn.TextSize = 20
-MinBtn.TextColor3 = Color3.new(1,1,1)
-MinBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-MinBtn.BorderSizePixel = 0
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
-
--- Criar botão com estilo
-local function createButton(text, y)
-	local btn = Instance.new("TextButton", MainFrame)
+-- Função utilitária para criar botões com toggle
+local function createToggle(name, parent, callback)
+	local btn = Instance.new("TextButton")
+	btn.Text = name .. ": Desativado"
 	btn.Size = UDim2.new(1, -20, 0, 40)
-	btn.Position = UDim2.new(0, 10, 0, y)
-	btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	btn.Text = text
-	btn.Font = Enum.Font.SourceSansBold
-	btn.TextSize = 16
+	btn.Position = UDim2.new(0, 10, 0, #parent:GetChildren() * 45)
+	btn.Font = Enum.Font.Code
+	btn.TextSize = 18
 	btn.TextColor3 = Color3.new(1,1,1)
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-	return btn
+	btn.BackgroundColor3 = Color3.fromRGB(70,70,70)
+	btn.Parent = parent
+
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0, 6)
+	applyRGB(btn)
+
+	local enabled = false
+	btn.MouseButton1Click:Connect(function()
+		enabled = not enabled
+		btn.Text = name .. ": " .. (enabled and "Ativado" or "Desativado")
+		callback(enabled)
+	end)
 end
 
--- Botões
-local SpeedBtn = createButton("Velocidade Rápida: Desativado", 40)
-local UltraBtn = createButton("Velocidade Ultra: Desativado", 90)
-local JumpBtn = createButton("Pulo Infinito: Desativado", 140)
-
--- Mostrar/ocultar
-FloatButton.MouseButton1Click:Connect(function()
-	MainFrame.Visible = true
-	FloatButton.Visible = false
-end)
-
-MinBtn.MouseButton1Click:Connect(function()
-	MainFrame.Visible = false
-	FloatButton.Visible = true
-end)
-
 -- Funções
-local speedOn = false
-local ultraOn = false
-local jumpOn = false
-
-SpeedBtn.MouseButton1Click:Connect(function()
-	speedOn = not speedOn
-	ultraOn = false
-	SpeedBtn.Text = "Velocidade Rápida: " .. (speedOn and "Ativado" or "Desativado")
-	UltraBtn.Text = "Velocidade Ultra: Desativado"
-	humanoid.WalkSpeed = speedOn and 50 or 16
+createToggle("Velocidade Rápida", frame, function(on)
+	if on then
+		humanoid.WalkSpeed = 50
+	else
+		humanoid.WalkSpeed = 16
+	end
 end)
 
-UltraBtn.MouseButton1Click:Connect(function()
-	ultraOn = not ultraOn
-	speedOn = false
-	UltraBtn.Text = "Velocidade Ultra: " .. (ultraOn and "Ativado" or "Desativado")
-	SpeedBtn.Text = "Velocidade Rápida: Desativado"
-	humanoid.WalkSpeed = ultraOn and 80 or 16
+createToggle("Velocidade Ultra", frame, function(on)
+	if on then
+		humanoid.WalkSpeed = 80
+	else
+		humanoid.WalkSpeed = 16
+	end
 end)
 
-JumpBtn.MouseButton1Click:Connect(function()
-	jumpOn = not jumpOn
-	JumpBtn.Text = "Pulo Infinito: " .. (jumpOn and "Ativado" or "Desativado")
+createToggle("Pulo Infinito", frame, function(on)
+	if on then
+		_G.infiniteJump = true
+	else
+		_G.infiniteJump = false
+	end
 end)
 
+-- Pulo infinito funcional
 UserInputService.JumpRequest:Connect(function()
-	if jumpOn then
+	if _G.infiniteJump then
 		local char = player.Character
-		if char then
-			local hum = char:FindFirstChildOfClass("Humanoid")
-			if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+		if char and char:FindFirstChildOfClass("Humanoid") then
+			char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
 		end
 	end
 end)
 
--- Animação RGB
-RunService.RenderStepped:Connect(function()
-	local color = getRainbowColor(0)
-	MainFrame.BackgroundColor3 = color
-	Title.TextColor3 = color
-	SpeedBtn.BackgroundColor3 = color
-	UltraBtn.BackgroundColor3 = color
-	JumpBtn.BackgroundColor3 = color
-	MinBtn.BackgroundColor3 = color
-	FloatButton.BackgroundColor3 = color
+-- Minimizar e abrir
+frame.Visible = false
+floatButton.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
 end)
