@@ -134,23 +134,6 @@ local btnSpeed50 = createButton("Velocidade Rápida OFF", 60, function(btn)
 	end
 end)
 
--- Botão Velocidade Ultra Rápida
-local btnUltra = createButton("Velocidade Ultra Rápida OFF", 110, function(btn)
-	ultraSpeedOn = not ultraSpeedOn
-	speedOn = false
-	if ultraSpeedOn then
-		buySpeedCoil()
-		task.wait(2)
-		equipSpeedCoil()
-		btn.Text = "Velocidade Ultra Rápida ON"
-		btnSpeed50.Text = "Velocidade Rápida OFF"
-	else
-		btn.Text = "Velocidade Ultra Rápida OFF"
-	end
-end)
-
-RunService.Heartbeat:Connect(maintainSpeed)
-
 -- === Pulo Infinito ===
 local infiniteJumpOn = false
 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
