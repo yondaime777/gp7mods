@@ -63,78 +63,32 @@ createButton("Minimizar", 220, function()
 	floatBtn.Visible = true
 end)
 
--- === Variáveis de velocidade ===
+-- === Variáveis para Speed Hack ===
 local speedOn = false
-local ultraSpeedOn = false
+local SPEED_VALUE = 40
 local NORMAL_SPEED = 16
-local SPEED_50 = 50
-local SPEED_80 = 80
-local ITEM_NAME = "Speed Coil"
-
-local function buySpeedCoil()
-	for _, obj in pairs(workspace:GetDescendants()) do
-		if obj:IsA("ProximityPrompt") then
-			if obj.ActionText and obj.ActionText:lower():find("speed") or obj.ObjectText and obj.ObjectText:lower():find("coil") then
-				pcall(function() obj:InputHoldBegin() task.wait(0.1) obj:InputHoldEnd() end)
-			end
-		elseif obj:IsA("ClickDetector") and obj.Parent and obj.Parent.Name:lower():find("speed") then
-			pcall(function() fireclickdetector(obj) end)
-		end
-	end
-end
-
-local function equipSpeedCoil()
-	local backpack = LocalPlayer:WaitForChild("Backpack")
-	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local humanoid = character:WaitForChild("Humanoid")
-	for _, tool in pairs(backpack:GetChildren()) do
-		if tool:IsA("Tool") and tool.Name:lower():find("speed") then
-			humanoid:EquipTool(tool)
-			task.wait(1)
-			humanoid:UnequipTools()
-			return true
-		end
-	end
-	return false
-end
 
 local function maintainSpeed()
 	local character = LocalPlayer.Character
 	if not character then return end
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then return end
-
 	if speedOn then
-		if humanoid.WalkSpeed ~= SPEED_50 then
-			humanoid.WalkSpeed = SPEED_50
-		end
-	elseif ultraSpeedOn then
-		if humanoid.WalkSpeed ~= SPEED_80 then
-			humanoid.WalkSpeed = SPEED_80
-		end
+		humanoid.WalkSpeed = SPEED_VALUE
 	else
-		if humanoid.WalkSpeed ~= NORMAL_SPEED then
-			humanoid.WalkSpeed = NORMAL_SPEED
-		end
+		humanoid.WalkSpeed = NORMAL_SPEED
 	end
 end
 
 -- Botão Velocidade Rápida
-local btnSpeed50 = createButton("Velocidade Rápida OFF", 60, function(btn)
+createButton("Velocidade Rápida OFF", 60, function(btn)
 	speedOn = not speedOn
-	ultraSpeedOn = false
-	if speedOn then
-		buySpeedCoil()
-		task.wait(2)
-		equipSpeedCoil()
-		btn.Text = "Velocidade Rápida ON"
-		btnUltra.Text = "Velocidade Ultra Rápida OFF"
-	else
-		btn.Text = "Velocidade Rápida OFF"
-	end
+	btn.Text = speedOn and "Velocidade Rápida ON" or "Velocidade Rápida OFF"
 end)
 
--- === Pulo Infinito ===
+RunService.Heartbeat:Connect(maintainSpeed)
+
+-- === Infinite Jump ===
 local infiniteJumpOn = false
 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 
