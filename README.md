@@ -106,30 +106,58 @@ infiniteJumpOn = not infiniteJumpOn
 btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
 
---HITBOX
+local hitboxExpandOn = false
 
+createButton("Hitbox Expand OFF", 190, function(btn)
+	hitboxExpandOn = not hitboxExpandOn
+	toggleHitboxExpand(hitboxExpandOn)
+	btn.Text = hitboxExpandOn and "Hitbox Expand ON" or "Hitbox Expand OFF"
+	btn.BackgroundColor3 = hitboxExpandOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 100, 0)
+end)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local hitboxPart = nil
 local hitboxOn = false
 
-local function toggleHitbox(ativo)
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	for _, part in pairs(char:GetChildren()) do
-		if part:IsA("BasePart") and (part.Name:lower():find("leg") or part.Name:lower():find("foot")) then
-			if ativo then
-				part.Size = Vector3.new(2, 4, 2)
-				part.Material = Enum.Material.ForceField
-				part.Transparency = 0.4
-			else
-				part.Size = Vector3.new(1, 2, 1)
-				part.Material = Enum.Material.Plastic
-				part.Transparency = 0
-			end
-		end
+local function createHitbox()
+	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	if hitboxPart then hitboxPart:Destroy() end
+
+	hitboxPart = Instance.new("Part")
+	hitboxPart.Name = "HitboxExpand"
+	hitboxPart.Transparency = 1  -- invisível
+	hitboxPart.Anchored = false
+	hitboxPart.CanCollide = false
+	hitboxPart.Size = Vector3.new(6, 4, 6) -- aumenta o tamanho, pode ajustar
+	hitboxPart.Parent = character
+
+	-- Posicionar na parte que quiser, por exemplo, HumanoidRootPart
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = hitboxPart
+		weld.Part1 = hrp
+		weld.Parent = hitboxPart
+		hitboxPart.CFrame = hrp.CFrame
 	end
 end
 
-createButton("Hitbox OFF", 190, function(btn)
-	hitboxOn = not hitboxOn
-	toggleHitbox(hitboxOn)
-	btn.Text = hitboxOn and "Hitbox ON" or "Hitbox OFF"
-	btn.BackgroundColor3 = hitboxOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 100, 0)
-end)
+local function removeHitbox()
+	if hitboxPart then
+		hitboxPart:Destroy()
+		hitboxPart = nil
+	end
+end
+
+local function toggleHitboxExpand(ativo)
+	if ativo then
+		createHitbox()
+	else
+		removeHitbox()
+	end
+end
+
+-- Exemplo: chamar toggleHitboxExpand(true) para ativar
+-- toggleHitboxExpand(false) para desativar
