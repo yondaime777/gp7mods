@@ -65,7 +65,7 @@ end)
 
 -- === Variáveis para Speed Hack ===
 local speedOn = false
-local SPEED_VALUE = 10
+local SPEED_VALUE = 5
 local NORMAL_SPEED = 16
 
 local function maintainSpeed()
