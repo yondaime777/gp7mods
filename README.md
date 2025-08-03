@@ -123,23 +123,29 @@ local hitboxOn = false
 
 local function createHitbox()
 	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	if hitboxPart then hitboxPart:Destroy() end
+
+	if hitboxPart then
+		hitboxPart:Destroy()
+		hitboxPart = nil
+	end
 
 	hitboxPart = Instance.new("Part")
 	hitboxPart.Name = "HitboxExpand"
+	hitboxPart.Size = Vector3.new(6, 5, 6)  -- tamanho maior, ajuste se quiser
 	hitboxPart.Transparency = 1  -- invisível
+	hitboxPart.CanCollide = true  -- pode colidir para tentar aumentar alcance
 	hitboxPart.Anchored = false
-	hitboxPart.CanCollide = false
-	hitboxPart.Size = Vector3.new(6, 4, 6) -- aumenta o tamanho, pode ajustar
+	hitboxPart.Massless = true
 	hitboxPart.Parent = character
 
-	-- Posicionar na parte que quiser, por exemplo, HumanoidRootPart
+	-- Conecta com o HumanoidRootPart com Weld para mover junto
 	local hrp = character:FindFirstChild("HumanoidRootPart")
 	if hrp then
 		local weld = Instance.new("WeldConstraint")
 		weld.Part0 = hitboxPart
 		weld.Part1 = hrp
 		weld.Parent = hitboxPart
+
 		hitboxPart.CFrame = hrp.CFrame
 	end
 end
@@ -158,6 +164,3 @@ local function toggleHitboxExpand(ativo)
 		removeHitbox()
 	end
 end
-
--- Exemplo: chamar toggleHitboxExpand(true) para ativar
--- toggleHitboxExpand(false) para desativar
