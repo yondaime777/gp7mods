@@ -10,7 +10,7 @@ gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 260)
+frame.Size = UDim2.new(0, 220, 0, 300)
 frame.Position = UDim2.new(0, 20, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.4
@@ -28,14 +28,26 @@ title.TextScaled = true
 
 -- Botão flutuante minimizar
 local floatBtn = Instance.new("TextButton", gui)
-floatBtn.Text = "GP7"
-floatBtn.Size = UDim2.new(0, 60, 0, 35)
+floatBtn.Text = "+"
+floatBtn.Size = UDim2.new(0, 40, 0, 40)
 floatBtn.Position = UDim2.new(0, 10, 0, 10)
-floatBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+floatBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
 floatBtn.TextColor3 = Color3.new(0, 0, 0)
 floatBtn.Visible = false
-floatBtn.Font = Enum.Font.GothamBold
+floatBtn.Font = Enum.Font.GothamBlack
 floatBtn.TextScaled = true
+floatBtn.BorderSizePixel = 0
+floatBtn.ClipsDescendants = true
+floatBtn.TextWrapped = true
+floatBtn.AutoButtonColor = true
+floatBtn.BackgroundTransparency = 0
+floatBtn.BorderMode = Enum.BorderMode.Inset
+floatBtn.ZIndex = 2
+floatBtn.AnchorPoint = Vector2.new(0, 0)
+floatBtn.TextStrokeTransparency = 0.8
+floatBtn.TextStrokeColor3 = Color3.new(0, 0, 0)
+floatBtn.UICorner = Instance.new("UICorner", floatBtn)
+floatBtn.UICorner.CornerRadius = UDim.new(1, 0)
 
 floatBtn.MouseButton1Click:Connect(function()
 	frame.Visible = true
@@ -58,7 +70,7 @@ local function createButton(text, posY, callback)
 	return btn
 end
 
-createButton("Minimizar", 220, function()
+createButton("Minimizar", 260, function()
 	frame.Visible = false
 	floatBtn.Visible = true
 end)
@@ -104,4 +116,30 @@ end)
 createButton("Pulo Infinito OFF", 160, function(btn)
 	infiniteJumpOn = not infiniteJumpOn
 	btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
+end)
+
+-- === Hitbox Expandido ===
+local hitboxAtivado = false
+local function toggleHitbox(ativo)
+	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	for _, part in pairs(char:GetChildren()) do
+		if part:IsA("BasePart") and (part.Name:lower():find("leg") or part.Name:lower():find("foot")) then
+			if ativo then
+				part.Size = Vector3.new(2, 4, 2)
+				part.Material = Enum.Material.ForceField
+				part.Transparency = 0.4
+			else
+				part.Size = Vector3.new(1, 2, 1)
+				part.Material = Enum.Material.Plastic
+				part.Transparency = 0
+			end
+		end
+	end
+end
+
+createButton("Hitbox: Desativado", 210, function(btn)
+	hitboxAtivado = not hitboxAtivado
+	toggleHitbox(hitboxAtivado)
+	btn.Text = hitboxAtivado and "Hitbox: Ativado" or "Hitbox: Desativado"
+	btn.BackgroundColor3 = hitboxAtivado and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 0)
 end)
