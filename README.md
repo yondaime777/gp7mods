@@ -42,7 +42,6 @@ floatBtn.MouseButton1Click:Connect(function()
 	floatBtn.Visible = false
 end)
 
--- Função criadora de botões
 local function createButton(text, posY, callback)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(1, -20, 0, 40)
@@ -101,7 +100,7 @@ UserInputService.JumpRequest:Connect(function()
 	end
 end)
 
-createButton("Pulo Infinito OFF", 120, function(btn)
+createButton("Pulo Infinito OFF", 160, function(btn)
 	infiniteJumpOn = not infiniteJumpOn
 	btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
@@ -125,8 +124,9 @@ local function toggleHitbox(ativo)
 	end
 end
 
-createButton("Hitbox OFF", 180, function(btn)
+createButton("Hitbox OFF", 210, function(btn)
 	hitboxOn = not hitboxOn
 	toggleHitbox(hitboxOn)
 	btn.Text = hitboxOn and "Hitbox ON" or "Hitbox OFF"
+	btn.BackgroundColor3 = hitboxOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 100, 0)
 end)
