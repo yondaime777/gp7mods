@@ -28,32 +28,21 @@ title.TextScaled = true
 
 -- Botão flutuante minimizar
 local floatBtn = Instance.new("TextButton", gui)
-floatBtn.Text = "+"
-floatBtn.Size = UDim2.new(0, 40, 0, 40)
+floatBtn.Text = "GP7"
+floatBtn.Size = UDim2.new(0, 60, 0, 35)
 floatBtn.Position = UDim2.new(0, 10, 0, 10)
-floatBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 floatBtn.TextColor3 = Color3.new(0, 0, 0)
 floatBtn.Visible = false
-floatBtn.Font = Enum.Font.GothamBlack
+floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextScaled = true
-floatBtn.BorderSizePixel = 0
-floatBtn.ClipsDescendants = true
-floatBtn.TextWrapped = true
-floatBtn.AutoButtonColor = true
-floatBtn.BackgroundTransparency = 0
-floatBtn.BorderMode = Enum.BorderMode.Inset
-floatBtn.ZIndex = 2
-floatBtn.AnchorPoint = Vector2.new(0, 0)
-floatBtn.TextStrokeTransparency = 0.8
-floatBtn.TextStrokeColor3 = Color3.new(0, 0, 0)
-floatBtn.UICorner = Instance.new("UICorner", floatBtn)
-floatBtn.UICorner.CornerRadius = UDim.new(1, 0)
 
 floatBtn.MouseButton1Click:Connect(function()
 	frame.Visible = true
 	floatBtn.Visible = false
 end)
 
+-- Função criadora de botões
 local function createButton(text, posY, callback)
 	local btn = Instance.new("TextButton", frame)
 	btn.Size = UDim2.new(1, -20, 0, 40)
@@ -75,7 +64,7 @@ createButton("Minimizar", 260, function()
 	floatBtn.Visible = true
 end)
 
--- === Variáveis para Speed Hack ===
+-- === Velocidade Rápida ===
 local speedOn = false
 local SPEED_VALUE = 32
 local NORMAL_SPEED = 16
@@ -92,7 +81,6 @@ local function maintainSpeed()
 	end
 end
 
--- Botão Velocidade Rápida
 createButton("Velocidade Rápida OFF", 60, function(btn)
 	speedOn = not speedOn
 	btn.Text = speedOn and "Velocidade Rápida ON" or "Velocidade Rápida OFF"
@@ -100,7 +88,7 @@ end)
 
 RunService.Heartbeat:Connect(maintainSpeed)
 
--- === Infinite Jump ===
+-- === Pulo Infinito ===
 local infiniteJumpOn = false
 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 
@@ -113,13 +101,13 @@ UserInputService.JumpRequest:Connect(function()
 	end
 end)
 
-createButton("Pulo Infinito OFF", 160, function(btn)
+createButton("Pulo Infinito OFF", 120, function(btn)
 	infiniteJumpOn = not infiniteJumpOn
 	btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
 
 -- === Hitbox Expandido ===
-local hitboxAtivado = false
+local hitboxOn = false
 local function toggleHitbox(ativo)
 	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	for _, part in pairs(char:GetChildren()) do
@@ -137,9 +125,8 @@ local function toggleHitbox(ativo)
 	end
 end
 
-createButton("Hitbox: Desativado", 210, function(btn)
-	hitboxAtivado = not hitboxAtivado
-	toggleHitbox(hitboxAtivado)
-	btn.Text = hitboxAtivado and "Hitbox: Ativado" or "Hitbox: Desativado"
-	btn.BackgroundColor3 = hitboxAtivado and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 0)
+createButton("Hitbox OFF", 180, function(btn)
+	hitboxOn = not hitboxOn
+	toggleHitbox(hitboxOn)
+	btn.Text = hitboxOn and "Hitbox ON" or "Hitbox OFF"
 end)
