@@ -137,7 +137,3 @@ createButton("Hitbox Carrinho OFF", 110, function(btn)
         task.wait(0.1)  -- intervalo entre cada hitbox
     end
 end)
-
-createButton("Hitbox Carrinho OFF", 110, function(btn)
-    ...
-end)
