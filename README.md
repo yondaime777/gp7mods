@@ -106,61 +106,38 @@ infiniteJumpOn = not infiniteJumpOn
 btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
 
-local hitboxExpandOn = false
-
-createButton("Hitbox Expand OFF", 190, function(btn)
-	hitboxExpandOn = not hitboxExpandOn
-	toggleHitboxExpand(hitboxExpandOn)
-	btn.Text = hitboxExpandOn and "Hitbox Expand ON" or "Hitbox Expand OFF"
-	btn.BackgroundColor3 = hitboxExpandOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 100, 0)
-end)
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local hitboxPart = nil
+-- === HITBOX CHUTE FORTE ===
 local hitboxOn = false
 
-local function createHitbox()
-	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+createButton("Hitbox Carrinho OFF", 110, function(btn)
+    hitboxOn = not hitboxOn
+    btn.Text = hitboxOn and "Hitbox Carrinho ON" or "Hitbox Carrinho OFF"
 
-	if hitboxPart then
-		hitboxPart:Destroy()
-		hitboxPart = nil
-	end
+    while hitboxOn do
+        task.spawn(function()
+            local args = {
+                [1] = "TackleActivated",
+                [2] = tick()  -- timestamp atual
+            }
+            
+            pcall(function()
+                game:GetService("ReplicatedStorage")
+                :WaitForChild("Packages")
+                :WaitForChild("_Index")
+                :WaitForChild("sleitnick_knit@1.7.0")
+                :WaitForChild("knit")
+                :WaitForChild("Services")
+                :WaitForChild("ActionService")
+                :WaitForChild("RF")
+                :WaitForChild("PerformActionThenGet")
+                :InvokeServer(unpack(args))
+            end)
+        end)
 
-	hitboxPart = Instance.new("Part")
-	hitboxPart.Name = "HitboxExpand"
-	hitboxPart.Size = Vector3.new(6, 5, 6)  -- tamanho maior, ajuste se quiser
-	hitboxPart.Transparency = 1  -- invisível
-	hitboxPart.CanCollide = true  -- pode colidir para tentar aumentar alcance
-	hitboxPart.Anchored = false
-	hitboxPart.Massless = true
-	hitboxPart.Parent = character
+        task.wait(0.1)  -- intervalo entre cada hitbox
+    end
+end)
 
-	-- Conecta com o HumanoidRootPart com Weld para mover junto
-	local hrp = character:FindFirstChild("HumanoidRootPart")
-	if hrp then
-		local weld = Instance.new("WeldConstraint")
-		weld.Part0 = hitboxPart
-		weld.Part1 = hrp
-		weld.Parent = hitboxPart
-
-		hitboxPart.CFrame = hrp.CFrame
-	end
-end
-
-local function removeHitbox()
-	if hitboxPart then
-		hitboxPart:Destroy()
-		hitboxPart = nil
-	end
-end
-
-local function toggleHitboxExpand(ativo)
-	if ativo then
-		createHitbox()
-	else
-		removeHitbox()
-	end
-end
+createButton("Hitbox Carrinho OFF", 110, function(btn)
+    ...
+end)
