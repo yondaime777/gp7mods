@@ -142,7 +142,32 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-createButton("Minimizar", 310, function()
+createButton("Minimizar", 350, function()
 frame.Visible = false
 floatBtn.Visible = true
 end)
+
+-- === Variáveis para Speed Hack ===
+local speedOn = false
+local SPEED_VALUE = 100
+local NORMAL_SPEED = 16
+
+local function maintainSpeed()
+local character = LocalPlayer.Character
+if not character then return end
+local humanoid = character:FindFirstChildOfClass("Humanoid")
+if not humanoid then return end
+if speedOn then
+humanoid.WalkSpeed = SPEED_VALUE
+else
+humanoid.WalkSpeed = NORMAL_SPEED
+end
+end
+
+-- Botão Velocidade Rápida
+createButton("Velocidade Ultra Rápida OFF", 310, function(btn)
+speedOn = not speedOn
+btn.Text = speedOn and "Velocidade Rápida ON" or "Velocidade Rápida OFF"
+end)
+
+RunService.Heartbeat:Connect(maintainSpeed)
