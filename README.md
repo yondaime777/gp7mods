@@ -1,12 +1,15 @@
-eulocal Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
+print("[GP7Menu] Iniciando script...")
+
 -- Criar GUI principal
-local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
 gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 220, 0, 400)
@@ -16,6 +19,7 @@ frame.BackgroundTransparency = 0.4
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
+frame.Visible = true -- garante visibilidade inicial
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
@@ -37,6 +41,7 @@ floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextScaled = true
 
 floatBtn.MouseButton1Click:Connect(function()
+    print("[GP7Menu] Abrindo menu...")
     frame.Visible = true
     floatBtn.Visible = false
 end)
@@ -55,6 +60,7 @@ local function createButton(text, callback)
     btn.Text = text
     btn.BorderSizePixel = 0
     btn.MouseButton1Click:Connect(function()
+        print("[GP7Menu] Botão clicado: " .. text)
         callback(btn)
     end)
     buttonIndex += 1
@@ -78,6 +84,7 @@ createButton("Velocidade: Normal", function(btn)
     speedMode = (speedMode + 1) % 3
     local nomes = {"Normal", "Rápida", "Ultra Rápida"}
     btn.Text = "Velocidade: " .. nomes[speedMode + 1]
+    print("[GP7Menu] Velocidade alterada para: " .. nomes[speedMode + 1])
 end)
 
 -- ===== INFINITE JUMP =====
@@ -94,6 +101,7 @@ end)
 createButton("Pulo Infinito OFF", function(btn)
     infiniteJumpOn = not infiniteJumpOn
     btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
+    print("[GP7Menu] Pulo Infinito: " .. (infiniteJumpOn and "ON" or "OFF"))
 end)
 
 -- ===== TELEPORTE =====
@@ -104,6 +112,8 @@ createButton("Salvar Posição", function()
     if char and char:FindFirstChild("HumanoidRootPart") then
         savedPosition = char.HumanoidRootPart.Position
         print("[Teleport] Posição salva:", savedPosition)
+    else
+        print("[Teleport] Personagem não encontrado para salvar posição.")
     end
 end)
 
@@ -111,9 +121,9 @@ createButton("Teleportar", function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
         char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-        print("[Teleport] Teleportado!")
+        print("[Teleport] Teleportado para posição salva!")
     else
-        print("[Teleport] Nenhuma posição salva!")
+        print("[Teleport] Nenhuma posição salva para teleportar!")
     end
 end)
 
@@ -132,10 +142,14 @@ end)
 createButton("Noclip OFF", function(btn)
     noclipOn = not noclipOn
     btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
+    print("[GP7Menu] Noclip: " .. (noclipOn and "ON" or "OFF"))
 end)
 
 -- ===== MINIMIZAR =====
 createButton("Minimizar", function()
     frame.Visible = false
     floatBtn.Visible = true
+    print("[GP7Menu] Menu minimizado")
 end)
+
+print("[GP7Menu] Script carregado com sucesso!")
