@@ -134,32 +134,33 @@ createButton("Noclip OFF", function(btn)
     btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
 end)
 
--- ===== MINIMIZAR =====
-createButton("Minimizar", function()
-    frame.Visible = false
-    floatBtn.Visible = true
-end)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
--- ===== ESP =====
+local LocalPlayer = Players.LocalPlayer
 local espOn = false
 local espBoxes = {}
 
+-- Cria a caixa vermelha ao redor do personagem
 local function createEspBox(player)
     if espBoxes[player] then return end
     local character = player.Character
     if not character then return end
     local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not hrp or not humanoid then return end
 
     local box = Instance.new("BoxHandleAdornment")
     box.Name = "GP7EspBox"
     box.Adornee = hrp
-    box.Size = Vector3.new(2, 5, 1) -- Tamanho aproximado do corpo humanoide (ajuste se quiser)
-    box.Transparency = 0.5
-    box.Color3 = Color3.new(1, 0, 0) -- Vermelho
     box.AlwaysOnTop = true
     box.ZIndex = 10
+    box.Color3 = Color3.new(1, 0, 0) -- vermelho
+    box.Transparency = 0.5
     box.Parent = hrp
+
+    -- Ajusta o tamanho para cobrir o corpo inteiro
+    box.Size = Vector3.new(2, humanoid.HipHeight * 2 + 3, 1)
 
     espBoxes[player] = box
 end
@@ -173,12 +174,15 @@ end
 
 local function onCharacterAdded(player, character)
     if espOn then
-        wait(0.5) -- espera a HumanoidRootPart aparecer
-        createEspBox(player)
+        -- Espera a HumanoidRootPart aparecer para criar a caixa
+        local hrp = character:WaitForChild("HumanoidRootPart", 5)
+        if hrp then
+            createEspBox(player)
+        end
     end
 end
 
--- Detecta quando o personagem do jogador aparece (regeneração e spawn)
+-- Detecta jogadores já presentes com personagem
 for _, player in pairs(Players:GetPlayers()) do
     player.CharacterAdded:Connect(function(character)
         onCharacterAdded(player, character)
@@ -188,24 +192,25 @@ for _, player in pairs(Players:GetPlayers()) do
     end
 end
 
--- Detecta novos jogadores entrando no jogo
+-- Detecta novos jogadores entrando
 Players.PlayerAdded:Connect(function(player)
     player.CharacterAdded:Connect(function(character)
         onCharacterAdded(player, character)
     end)
 end)
 
+-- Remove caixa quando jogador sai
 Players.PlayerRemoving:Connect(function(player)
     removeEspBox(player)
 end)
 
--- Botão ESP (posição original, antes o "Minimizar")
-createButton("ESP OFF", function(btn)
+-- Função para ativar/desativar ESP
+local function toggleESP()
     espOn = not espOn
-    btn.Text = espOn and "ESP ON" or "ESP OFF"
     if espOn then
-        for player, _ in pairs(espBoxes) do
-            removeEspBox(player)
+        -- Remove tudo antes (evita duplicação)
+        for p, _ in pairs(espBoxes) do
+            removeEspBox(p)
         end
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character then
@@ -213,13 +218,18 @@ createButton("ESP OFF", function(btn)
             end
         end
     else
-        for player, _ in pairs(espBoxes) do
-            removeEspBox(player)
+        for p, _ in pairs(espBoxes) do
+            removeEspBox(p)
         end
     end
+end
+
+createButton("ESP", function()
+    frame.Visible = false
+    floatBtn.Visible = true
 end)
 
--- Mover o botão minimizar para ficar abaixo do botão ESP
+-- ===== MINIMIZAR =====
 createButton("Minimizar", function()
     frame.Visible = false
     floatBtn.Visible = true
