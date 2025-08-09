@@ -134,6 +134,85 @@ createButton("Noclip OFF", function(btn)
     btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
 end)
 
+-- ===== ESP =====
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local espOn = false
+local espBoxes = {}
+
+local function createEspBox(player)
+    if espBoxes[player] then return end
+    local character = player.Character
+    if not character then return end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not hrp or not humanoid then return end
+
+    local box = Instance.new("BoxHandleAdornment")
+    box.Name = "GP7EspBox"
+    box.Adornee = hrp
+    box.AlwaysOnTop = true
+    box.ZIndex = 10
+    box.Color3 = Color3.new(1, 0, 0) -- vermelho
+    box.Transparency = 0.5
+    box.Size = Vector3.new(2, humanoid.HipHeight * 2 + 3, 1) -- tamanho proporcional ao personagem
+    box.Parent = hrp
+
+    espBoxes[player] = box
+end
+
+local function removeEspBox(player)
+    if espBoxes[player] then
+        espBoxes[player]:Destroy()
+        espBoxes[player] = nil
+    end
+end
+
+local function onCharacterAdded(player, character)
+    if not espOn then return end
+    local hrp = character:WaitForChild("HumanoidRootPart", 5)
+    if hrp then
+        createEspBox(player)
+    end
+end
+
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(function(character)
+        onCharacterAdded(player, character)
+    end)
+    if player.Character and espOn then
+        createEspBox(player)
+    end
+end
+
+Players.PlayerRemoving:Connect(removeEspBox)
+Players.PlayerAdded:Connect(onPlayerAdded)
+
+local function toggleESP()
+    espOn = not espOn
+    if espOn then
+        for p, _ in pairs(espBoxes) do
+            removeEspBox(p)
+        end
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                onPlayerAdded(player)
+            end
+        end
+    else
+        for p, _ in pairs(espBoxes) do
+            removeEspBox(p)
+        end
+    end
+end
+
+-- Botão para ativar/desativar ESP
+createButton("ESP OFF", function(btn)
+    toggleESP()
+    btn.Text = espOn and "ESP ON" or "ESP OFF"
+end)
+
 -- ===== MINIMIZAR =====
 createButton("Minimizar", function()
     frame.Visible = false
