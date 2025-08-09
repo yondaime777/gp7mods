@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-
 local LocalPlayer = Players.LocalPlayer
 
 -- Criar GUI principal
@@ -10,7 +9,7 @@ gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 380)
+frame.Size = UDim2.new(0, 220, 0, 400)
 frame.Position = UDim2.new(0, 20, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.4
@@ -38,74 +37,69 @@ floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextScaled = true
 
 floatBtn.MouseButton1Click:Connect(function()
-frame.Visible = true
-floatBtn.Visible = false
+    frame.Visible = true
+    floatBtn.Visible = false
 end)
 
-local function createButton(text, posY, callback)
-local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(1, -20, 0, 40)
-btn.Position = UDim2.new(0, 10, 0, posY)
-btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-btn.TextColor3 = Color3.fromRGB(0, 255, 0)
-btn.Font = Enum.Font.GothamBold
-btn.TextScaled = true
-btn.Text = text
-btn.BorderSizePixel = 0
-btn.MouseButton1Click:Connect(function()
-callback(btn)
-end)
-return btn
+-- Criar botões automáticos
+local buttonY = 50 -- espaçamento vertical
+local buttonIndex = 0
+local function createButton(text, callback)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, 50 + (buttonIndex * buttonY))
+    btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+    btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    btn.Text = text
+    btn.BorderSizePixel = 0
+    btn.MouseButton1Click:Connect(function()
+        callback(btn)
+    end)
+    buttonIndex += 1
+    return btn
 end
 
--- === Variáveis para Speed Hack ===
-local speedOn = false
-local SPEED_VALUE = 32
-local NORMAL_SPEED = 16
+-- ===== SISTEMA DE VELOCIDADE =====
+local speedMode = 0 -- 0 = normal, 1 = rápido, 2 = ultra
+local SPEEDS = {16, 32, 200}
 
 local function maintainSpeed()
-local character = LocalPlayer.Character
-if not character then return end
-local humanoid = character:FindFirstChildOfClass("Humanoid")
-if not humanoid then return end
-if speedOn then
-humanoid.WalkSpeed = SPEED_VALUE
-else
-humanoid.WalkSpeed = NORMAL_SPEED
+    local character = LocalPlayer.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    humanoid.WalkSpeed = SPEEDS[speedMode + 1]
 end
-end
-
--- Botão Velocidade Rápida
-createButton("Velocidade Rápida OFF", 60, function(btn)
-speedOn = not speedOn
-btn.Text = speedOn and "Velocidade Rápida ON" or "Velocidade Rápida OFF"
-end)
-
 RunService.Heartbeat:Connect(maintainSpeed)
 
--- === Infinite Jump ===
+createButton("Velocidade: Normal", function(btn)
+    speedMode = (speedMode + 1) % 3
+    local nomes = {"Normal", "Rápida", "Ultra Rápida"}
+    btn.Text = "Velocidade: " .. nomes[speedMode + 1]
+end)
+
+-- ===== INFINITE JUMP =====
 local infiniteJumpOn = false
-local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-
 UserInputService.JumpRequest:Connect(function()
-if infiniteJumpOn then
-humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-if humanoid then
-humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-end
-end
+    if infiniteJumpOn then
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
 end)
 
-createButton("Pulo Infinito OFF", 110, function(btn)
-infiniteJumpOn = not infiniteJumpOn
-btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
+createButton("Pulo Infinito OFF", function(btn)
+    infiniteJumpOn = not infiniteJumpOn
+    btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
 
--- === SISTEMA DE TELEPORTE ===
+-- ===== TELEPORTE =====
 local savedPosition = nil
 
--- Botão para salvar posição
-createButton("Salvar Posição", 160, function()
+createButton("Salvar Posição", function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         savedPosition = char.HumanoidRootPart.Position
@@ -113,61 +107,35 @@ createButton("Salvar Posição", 160, function()
     end
 end)
 
--- Botão para teleportar
-createButton("Teleportar", 210, function()
+createButton("Teleportar", function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
         char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-        print("[Teleport] Teleportado para posição salva")
+        print("[Teleport] Teleportado!")
     else
         print("[Teleport] Nenhuma posição salva!")
     end
 end)
 
--- === Noclip ===
+-- ===== NOCLIP =====
 local noclipOn = false
-
-createButton("Noclip OFF", 260, function(btn)
-    noclipOn = not noclipOn
-    btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
-end)
-
 RunService.Stepped:Connect(function()
     if noclipOn and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then
+            if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
     end
 end)
 
-createButton("Minimizar", 350, function()
-frame.Visible = false
-floatBtn.Visible = true
+createButton("Noclip OFF", function(btn)
+    noclipOn = not noclipOn
+    btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
 end)
 
--- === Variáveis para Speed Hack ===
-local speedOn = false
-local SPEED_VALUE = 200
-local NORMAL_SPEED = 16
-
-local function maintainSpeed()
-local character = LocalPlayer.Character
-if not character then return end
-local humanoid = character:FindFirstChildOfClass("Humanoid")
-if not humanoid then return end
-if speedOn then
-humanoid.WalkSpeed = SPEED_VALUE
-else
-humanoid.WalkSpeed = NORMAL_SPEED
-end
-end
-
--- Botão Velocidade Rápida
-createButton("Velocidade Ultra Rápida OFF", 310, function(btn)
-speedOn = not speedOn
-btn.Text = speedOn and "Velocidade Ultra Rápida ON" or "Velocidade Ultra Rápida OFF"
+-- ===== MINIMIZAR =====
+createButton("Minimizar", function()
+    frame.Visible = false
+    floatBtn.Visible = true
 end)
-
-RunService.Heartbeat:Connect(maintainSpeed)
