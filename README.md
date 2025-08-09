@@ -128,3 +128,21 @@ createButton("Teleportar", 210, function()
         print("[Teleport] Nenhuma posição salva!")
     end
 end)
+
+-- === Noclip ===
+local noclipOn = false
+
+createButton("Noclip OFF", 310, function(btn)
+    noclipOn = not noclipOn
+    btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
+end)
+
+RunService.Stepped:Connect(function()
+    if noclipOn and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
