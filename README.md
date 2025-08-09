@@ -135,6 +135,7 @@ createButton("Noclip OFF", function(btn)
 end)
 
 -- ===== ESP =====
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
@@ -156,7 +157,7 @@ local function createEspBox(player)
     box.ZIndex = 10
     box.Color3 = Color3.new(1, 0, 0) -- vermelho
     box.Transparency = 0.5
-    box.Size = Vector3.new(2, humanoid.HipHeight * 2 + 3, 1) -- tamanho proporcional ao personagem
+    box.Size = Vector3.new(2, humanoid.HipHeight * 2 + 3, 1)
     box.Parent = hrp
 
     espBoxes[player] = box
@@ -186,18 +187,22 @@ local function onPlayerAdded(player)
     end
 end
 
--- Conectar os eventos *após* definir as funções e as variáveis
+-- Conecte uma única vez, para todos os novos players que entrarem
+Players.PlayerAdded:Connect(function(player)
+    onPlayerAdded(player)
+end)
+
+-- Remove ESP quando player sair
 Players.PlayerRemoving:Connect(removeEspBox)
-Players.PlayerAdded:Connect(onPlayerAdded)
 
 local function toggleESP()
     espOn = not espOn
     if espOn then
-        -- Remove caixas antigas
+        -- Remove caixas antigas (se existirem)
         for p, _ in pairs(espBoxes) do
             removeEspBox(p)
         end
-        -- Para cada player, cria ESP se personagem existir
+        -- Cria caixa ESP para todos os players atuais (exceto LocalPlayer)
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 if player.Character then
