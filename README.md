@@ -58,11 +58,6 @@ end)
 return btn
 end
 
-createButton("Minimizar", 310, function()
-frame.Visible = false
-floatBtn.Visible = true
-end)
-
 -- === Variáveis para Speed Hack ===
 local speedOn = false
 local SPEED_VALUE = 32
@@ -145,4 +140,9 @@ RunService.Stepped:Connect(function()
             end
         end
     end
+end)
+
+createButton("Minimizar", 310, function()
+frame.Visible = false
+floatBtn.Visible = true
 end)
