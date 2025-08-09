@@ -58,7 +58,7 @@ end)
 return btn
 end
 
-createButton("Minimizar", 260, function()
+createButton("Minimizar", 310, function()
 frame.Visible = false
 floatBtn.Visible = true
 end)
@@ -132,7 +132,7 @@ end)
 -- === Noclip ===
 local noclipOn = false
 
-createButton("Noclip OFF", 310, function(btn)
+createButton("Noclip OFF", 260, function(btn)
     noclipOn = not noclipOn
     btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
 end)
