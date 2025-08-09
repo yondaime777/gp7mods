@@ -106,36 +106,25 @@ infiniteJumpOn = not infiniteJumpOn
 btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
 
--- === HITBOX DE CARRINHO (SPAM REMOTE) ===
-local hitboxCarrinho = false
+-- === SISTEMA DE TELEPORTE ===
+local savedPosition = nil
 
-createButton("Hitbox Carrinho OFF", 110, function(btn)
-    hitboxCarrinho = not hitboxCarrinho
-    btn.Text = hitboxCarrinho and "Hitbox Carrinho ON" or "Hitbox Carrinho OFF"
+-- Botão para salvar posição
+createButton("Salvar Posição", 190, function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        savedPosition = char.HumanoidRootPart.Position
+        print("[Teleport] Posição salva:", savedPosition)
+    end
+end)
 
-    if hitboxCarrinho then
-        spawn(function()
-            while hitboxCarrinho do
-                local args = {
-                    [1] = "TackleActivated",
-                    [2] = tick()
-                }
-
-                pcall(function()
-                    game:GetService("ReplicatedStorage")
-                        :WaitForChild("Packages")
-                        :WaitForChild("_Index")
-                        :WaitForChild("sleitnick_knit@1.7.0")
-                        :WaitForChild("knit")
-                        :WaitForChild("Services")
-                        :WaitForChild("ActionService")
-                        :WaitForChild("RF")
-                        :WaitForChild("PerformActionThenGet")
-                        :InvokeServer(unpack(args))
-                end)
-
-                task.wait(0.15) -- diminua se quiser mais rápido, aumente se quiser mais seguro
-            end
-        end)
+-- Botão para teleportar
+createButton("Teleportar", 240, function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
+        char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+        print("[Teleport] Teleportado para posição salva")
+    else
+        print("[Teleport] Nenhuma posição salva!")
     end
 end)
