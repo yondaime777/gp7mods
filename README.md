@@ -141,7 +141,7 @@ local LocalPlayer = Players.LocalPlayer
 local espOn = false
 local espBoxes = {}
 
--- Cria a caixa ESP para um jogador
+-- Cria ESP para um player, se possível
 local function createEspBox(player)
     if espBoxes[player] then return end
     local character = player.Character
@@ -150,7 +150,7 @@ local function createEspBox(player)
     local hrp = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso")
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not hrp or not humanoid then return end
-    if humanoid.Health <= 0 then return end
+    if humanoid.Health <= 0 then return end -- Não cria se estiver morto
 
     local box = Instance.new("BoxHandleAdornment")
     box.Name = "GP7EspBox"
@@ -165,7 +165,6 @@ local function createEspBox(player)
     espBoxes[player] = box
 end
 
--- Remove a caixa ESP de um jogador
 local function removeEspBox(player)
     if espBoxes[player] then
         espBoxes[player]:Destroy()
@@ -173,13 +172,13 @@ local function removeEspBox(player)
     end
 end
 
--- Atualiza ESP ao mudar o estado do personagem
+-- Monitora personagem para criar e remover ESP com base no estado
 local function monitorCharacter(player, character)
-    local humanoid = character:WaitForChild("Humanoid", 10)
+    local humanoid = character:WaitForChild("Humanoid", 5)
     if not humanoid then return end
 
-    -- Cria ESP se estiver vivo e espOn estiver ativo
-    local function tryCreate()
+    -- Atualiza ESP de acordo com saúde
+    local function updateEsp()
         if espOn and humanoid.Health > 0 then
             createEspBox(player)
         else
@@ -187,38 +186,42 @@ local function monitorCharacter(player, character)
         end
     end
 
-    tryCreate()
+    updateEsp()
 
-    -- Atualiza ESP quando morre ou ressuscita
     humanoid.Died:Connect(function()
         removeEspBox(player)
     end)
     humanoid.HealthChanged:Connect(function()
-        tryCreate()
+        updateEsp()
     end)
 end
 
 local function onPlayerAdded(player)
+    -- Quando o personagem aparecer, monitore
     player.CharacterAdded:Connect(function(character)
-        wait(0.1) -- espera o personagem carregar
+        wait(0.1)
         if espOn then
             monitorCharacter(player, character)
         end
     end)
+    -- Se já tiver personagem, monitore
     if player.Character and espOn then
         monitorCharacter(player, player.Character)
     end
 end
 
+-- Conexões únicas para quando players entram e saem
 Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(removeEspBox)
 
 local function toggleESP()
     espOn = not espOn
     if espOn then
+        -- Remove qualquer caixa antiga só por precaução
         for p, _ in pairs(espBoxes) do
             removeEspBox(p)
         end
+        -- Ativa ESP para todos players vivos no jogo (menos local)
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
                 if player.Character then
@@ -227,6 +230,7 @@ local function toggleESP()
             end
         end
     else
+        -- Remove tudo
         for p, _ in pairs(espBoxes) do
             removeEspBox(p)
         end
@@ -238,7 +242,7 @@ createButton("ESP OFF", function(btn)
     toggleESP()
     btn.Text = espOn and "ESP ON" or "ESP OFF"
 end)
- 
+
 -- ===== MINIMIZAR =====
 createButton("Minimizar", function()
     frame.Visible = false
