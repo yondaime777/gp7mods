@@ -167,7 +167,7 @@ end
 -- Botão Velocidade Rápida
 createButton("Velocidade Ultra Rápida OFF", 310, function(btn)
 speedOn = not speedOn
-btn.Text = speedOn and "Velocidade Ultra Rápida ON" or "Velocidade Rápida OFF"
+btn.Text = speedOn and "Velocidade Ultra Rápida ON" or "Velocidade Ultra Rápida OFF"
 end)
 
 RunService.Heartbeat:Connect(maintainSpeed)
