@@ -10,7 +10,7 @@ gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 350)
+frame.Size = UDim2.new(0, 220, 0, 380)
 frame.Position = UDim2.new(0, 20, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.4
@@ -149,7 +149,7 @@ end)
 
 -- === Variáveis para Speed Hack ===
 local speedOn = false
-local SPEED_VALUE = 100
+local SPEED_VALUE = 200
 local NORMAL_SPEED = 16
 
 local function maintainSpeed()
@@ -167,7 +167,7 @@ end
 -- Botão Velocidade Rápida
 createButton("Velocidade Ultra Rápida OFF", 310, function(btn)
 speedOn = not speedOn
-btn.Text = speedOn and "Velocidade Rápida ON" or "Velocidade Rápida OFF"
+btn.Text = speedOn and "Velocidade Ultra Rápida ON" or "Velocidade Rápida OFF"
 end)
 
 RunService.Heartbeat:Connect(maintainSpeed)
