@@ -186,21 +186,27 @@ local function onPlayerAdded(player)
     end
 end
 
+-- Conectar os eventos *após* definir as funções e as variáveis
 Players.PlayerRemoving:Connect(removeEspBox)
 Players.PlayerAdded:Connect(onPlayerAdded)
 
 local function toggleESP()
     espOn = not espOn
     if espOn then
+        -- Remove caixas antigas
         for p, _ in pairs(espBoxes) do
             removeEspBox(p)
         end
+        -- Para cada player, cria ESP se personagem existir
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
-                onPlayerAdded(player)
+                if player.Character then
+                    createEspBox(player)
+                end
             end
         end
     else
+        -- Remove todas as caixas ESP
         for p, _ in pairs(espBoxes) do
             removeEspBox(p)
         end
