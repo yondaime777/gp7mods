@@ -143,19 +143,21 @@ local espBoxes = {}
 
 local function createEspBox(player)
     if espBoxes[player] then return end
+
     local character = player.Character
     if not character then return end
+
     local hrp = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("UpperTorso")
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not hrp or not humanoid then return end
     if humanoid.Health <= 0 then return end
 
     local box = Instance.new("BoxHandleAdornment")
-    box.Name = "GP7EspBox"
+    box.Name = "ESPBox"
     box.Adornee = hrp
     box.AlwaysOnTop = true
     box.ZIndex = 10
-    box.Color3 = Color3.new(1, 0, 0)
+    box.Color3 = Color3.new(1, 0, 0) -- vermelho
     box.Transparency = 0.5
     box.Size = Vector3.new(2, humanoid.HipHeight * 2 + 3, 1)
     box.Parent = hrp
@@ -187,6 +189,7 @@ local function monitorCharacter(player, character)
     humanoid.Died:Connect(function()
         removeEspBox(player)
     end)
+
     humanoid.HealthChanged:Connect(function()
         updateEsp()
     end)
@@ -210,16 +213,19 @@ Players.PlayerRemoving:Connect(removeEspBox)
 local function toggleESP()
     espOn = not espOn
     if espOn then
-        for p, _ in pairs(espBoxes) do
+        -- Limpa caixas antigas
+        for p in pairs(espBoxes) do
             removeEspBox(p)
         end
+        -- Aplica ESP em todos
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer and player.Character then
                 monitorCharacter(player, player.Character)
             end
         end
     else
-        for p, _ in pairs(espBoxes) do
+        -- Remove tudo
+        for p in pairs(espBoxes) do
             removeEspBox(p)
         end
     end
