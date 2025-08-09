@@ -139,3 +139,88 @@ createButton("Minimizar", function()
     frame.Visible = false
     floatBtn.Visible = true
 end)
+
+-- ===== ESP =====
+local espOn = false
+local espBoxes = {}
+
+local function createEspBox(player)
+    if espBoxes[player] then return end
+    local character = player.Character
+    if not character then return end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local box = Instance.new("BillboardGui")
+    box.Name = "GP7EspBox"
+    box.Adornee = hrp
+    box.Size = UDim2.new(4, 0, 4, 0)
+    box.AlwaysOnTop = true
+    box.StudsOffset = Vector3.new(0, 3, 0)
+    box.Parent = hrp
+
+    local frame = Instance.new("Frame", box)
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 0.7
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.new(0, 1, 0)
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+
+    espBoxes[player] = box
+end
+
+local function removeEspBox(player)
+    if espBoxes[player] then
+        espBoxes[player]:Destroy()
+        espBoxes[player] = nil
+    end
+end
+
+local function onCharacterAdded(player, character)
+    if espOn then
+        wait(0.5) -- espera a HumanoidRootPart aparecer
+        createEspBox(player)
+    end
+end
+
+-- Detecta quando o personagem do jogador aparece (regeneração e spawn)
+for _, player in pairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function(character)
+        onCharacterAdded(player, character)
+    end)
+    -- Se já estiver com personagem spawnado, cria o box
+    if player.Character then
+        createEspBox(player)
+    end
+end
+
+-- Detecta novos jogadores entrando no jogo
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        onCharacterAdded(player, character)
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    removeEspBox(player)
+end)
+
+createButton("ESP OFF", function(btn)
+    espOn = not espOn
+    btn.Text = espOn and "ESP ON" or "ESP OFF"
+    if espOn then
+        -- Remove tudo antes de criar de novo (evita duplicar)
+        for player, _ in pairs(espBoxes) do
+            removeEspBox(player)
+        end
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                createEspBox(player)
+            end
+        end
+    else
+        for player, _ in pairs(espBoxes) do
+            removeEspBox(player)
+        end
+    end
+end)
