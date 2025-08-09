@@ -10,7 +10,7 @@ gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 260)
+frame.Size = UDim2.new(0, 220, 0, 300)
 frame.Position = UDim2.new(0, 20, 0.4, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BackgroundTransparency = 0.4
@@ -58,7 +58,7 @@ end)
 return btn
 end
 
-createButton("Minimizar", 220, function()
+createButton("Minimizar", 260, function()
 frame.Visible = false
 floatBtn.Visible = true
 end)
@@ -101,7 +101,7 @@ end
 end
 end)
 
-createButton("Pulo Infinito OFF", 160, function(btn)
+createButton("Pulo Infinito OFF", 110, function(btn)
 infiniteJumpOn = not infiniteJumpOn
 btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
 end)
@@ -110,7 +110,7 @@ end)
 local savedPosition = nil
 
 -- Botão para salvar posição
-createButton("Salvar Posição", 190, function()
+createButton("Salvar Posição", 160, function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         savedPosition = char.HumanoidRootPart.Position
@@ -119,7 +119,7 @@ createButton("Salvar Posição", 190, function()
 end)
 
 -- Botão para teleportar
-createButton("Teleportar", 240, function()
+createButton("Teleportar", 210, function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
         char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
