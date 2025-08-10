@@ -5,32 +5,27 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
-print("[Brazuca God] Iniciando script...")
-
 local Window = Rayfield:CreateWindow({
     Name = "Brazuca God",
-    LoadingTitle = "Brazuca God",
+    LoadingTitle = "Carregando Brazuca God",
     LoadingSubtitle = "by GP7",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "BrazucaGod", 
-        FileName = "Config"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "", 
-        RememberJoins = true 
+        FolderName = nil,
+        FileName = "ConfigBrazucaGod"
     }
 })
 
--- Estados iniciais
-local speedMode = 0 -- 0 = normal, 1 = rápido, 2 = ultra
+local Tab = Window:CreateTab("Principal", 4483362458)
+
+-- Variáveis internas
+local speedMode = 0 -- 0=normal,1=rápido,2=ultra
 local SPEEDS = {16, 32, 200}
 local infiniteJumpOn = false
 local noclipOn = false
 local savedPosition = nil
 
--- Função para manter a velocidade atualizada
+-- Função para manter velocidade
 local function maintainSpeed()
     local character = LocalPlayer.Character
     if not character then return end
@@ -40,47 +35,31 @@ local function maintainSpeed()
 end
 RunService.Heartbeat:Connect(maintainSpeed)
 
-local MainTab = Window:CreateTab("Main")
-
--- Toggle velocidade
-MainTab:CreateToggle({
-    Name = "Velocidade Ultra",
+-- Botão Toggle: Velocidade
+local SpeedToggle = Tab:CreateToggle({
+    Name = "Speed Mode",
     CurrentValue = false,
-    Flag = "UltraSpeed",
-    Callback = function(value)
-        if value then
-            speedMode = 2
+    Flag = "SpeedToggle",
+    Callback = function(enabled)
+        if enabled then
+            speedMode = (speedMode + 1) % 3
+            print("[BrazucaGod] Velocidade alterada para modo " .. speedMode)
         else
             speedMode = 0
+            print("[BrazucaGod] Velocidade normal ativada")
         end
-        print("[Brazuca God] Velocidade alterada para: " .. (value and "Ultra Rápida" or "Normal"))
-    end,
+    end
 })
 
--- Toggle velocidade rápida (se quiser um toggle separado para a rápida)
-MainTab:CreateToggle({
-    Name = "Velocidade Rápida",
-    CurrentValue = false,
-    Flag = "FastSpeed",
-    Callback = function(value)
-        if value then
-            speedMode = 1
-        else
-            speedMode = 0
-        end
-        print("[Brazuca God] Velocidade alterada para: " .. (value and "Rápida" or "Normal"))
-    end,
-})
-
--- Toggle pulo infinito
-MainTab:CreateToggle({
+-- Botão Toggle: Pulo Infinito
+local InfiniteJumpToggle = Tab:CreateToggle({
     Name = "Pulo Infinito",
     CurrentValue = false,
-    Flag = "InfiniteJump",
-    Callback = function(value)
-        infiniteJumpOn = value
-        print("[Brazuca God] Pulo Infinito: " .. (value and "ON" or "OFF"))
-    end,
+    Flag = "InfiniteJumpToggle",
+    Callback = function(enabled)
+        infiniteJumpOn = enabled
+        print("[BrazucaGod] Pulo Infinito: " .. (enabled and "ON" or "OFF"))
+    end
 })
 
 UserInputService.JumpRequest:Connect(function()
@@ -92,64 +71,68 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Toggle noclip
-MainTab:CreateToggle({
+-- Botão Toggle: Noclip
+local NoclipToggle = Tab:CreateToggle({
     Name = "Noclip",
     CurrentValue = false,
-    Flag = "Noclip",
-    Callback = function(value)
-        noclipOn = value
-        print("[Brazuca God] Noclip: " .. (value and "ON" or "OFF"))
-    end,
+    Flag = "NoclipToggle",
+    Callback = function(enabled)
+        noclipOn = enabled
+        print("[BrazucaGod] Noclip: " .. (enabled and "ON" or "OFF"))
+    end
 })
 
 RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
+    if noclipOn and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = not noclipOn
+                part.CanCollide = false
+            end
+        end
+    elseif LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
             end
         end
     end
 end)
 
 -- Botão para salvar posição
-MainTab:CreateButton({
+local SavePosButton = Tab:CreateButton({
     Name = "Salvar Posição",
     Callback = function()
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             savedPosition = char.HumanoidRootPart.Position
-            print("[Brazuca God] Posição salva:", savedPosition)
+            print("[BrazucaGod] Posição salva:", savedPosition)
         else
-            print("[Brazuca God] Personagem não encontrado para salvar posição.")
+            print("[BrazucaGod] Personagem não encontrado para salvar posição.")
         end
-    end,
+    end
 })
 
 -- Botão para teleportar para posição salva
-MainTab:CreateButton({
+local TeleportButton = Tab:CreateButton({
     Name = "Teleportar para Posição Salva",
     Callback = function()
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
             char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-            print("[Brazuca God] Teleportado para posição salva!")
+            print("[BrazucaGod] Teleportado para posição salva!")
         else
-            print("[Brazuca God] Nenhuma posição salva para teleportar!")
+            print("[BrazucaGod] Nenhuma posição salva para teleportar!")
         end
-    end,
+    end
 })
 
--- Toggle para minimizar o menu
-MainTab:CreateToggle({
+-- Botão para minimizar menu
+local MinimizeButton = Tab:CreateButton({
     Name = "Minimizar Menu",
-    CurrentValue = false,
-    Flag = "MinimizeToggle",
-    Callback = function(value)
+    Callback = function()
         Window:Toggle()
-        print("[Brazuca God] Menu minimizado/aberto")
-    end,
+        print("[BrazucaGod] Menu minimizado/aberto.")
+    end
 })
 
-print("[Brazuca God] Script carregado com sucesso!")
+print("[BrazucaGod] Script carregado!")
