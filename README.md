@@ -1,8 +1,14 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
+-- Função para mostrar notificações na tela
 local function showNotification(text)
     local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Cria ScreenGui exclusivo para notificação
+    local notifGui = Instance.new("ScreenGui")
+    notifGui.Name = "NotificationGui"
+    notifGui.Parent = playerGui
 
     local notifFrame = Instance.new("Frame")
     notifFrame.Size = UDim2.new(0, 300, 0, 50)
@@ -10,8 +16,8 @@ local function showNotification(text)
     notifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     notifFrame.BackgroundTransparency = 0.3
     notifFrame.BorderSizePixel = 0
-    notifFrame.Parent = playerGui
-
+    notifFrame.Parent = notifGui
+    
     local notifLabel = Instance.new("TextLabel")
     notifLabel.Size = UDim2.new(1, 0, 1, 0)
     notifLabel.BackgroundTransparency = 1
@@ -27,10 +33,11 @@ local function showNotification(text)
             notifLabel.TextTransparency = notifLabel.TextTransparency + 0.07
             task.wait(0.05)
         end
-        notifFrame:Destroy()
+        notifGui:Destroy()
     end)
 end
 
+-- Criar tela de entrada da Key
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -70,11 +77,19 @@ Button.Font = Enum.Font.GothamBold
 Button.TextScaled = true
 Button.Parent = Frame
 
+-- Variáveis para Speed Hack
+local speedOn = false
+local speedRageOn = false
+local infiniteJumpOn = false
+local noclipOn = false
+local savedPosition = nil
 local updating = false
 
 Button.MouseButton1Click:Connect(function()
     if TextBox.Text == "GP" then
         ScreenGui:Destroy()
+
+        showNotification("Key aceita! Bem-vindo(a).")
 
         -- MENU
         local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -82,17 +97,14 @@ Button.MouseButton1Click:Connect(function()
             Name = "Brazuca God",
             LoadingTitle = "Carregando...",
             LoadingSubtitle = "By GP7",
-            ConfigurationSaving = { Enabled = false }
+            ConfigurationSaving = {
+                Enabled = false
+            }
         })
 
         local Tab = Window:CreateTab("Funções", 4483362458)
 
-        local speedOn = false
-        local speedRageOn = false
-        local infiniteJumpOn = false
-        local noclipOn = false
-        local savedPosition = nil
-
+        -- Função que mantém o WalkSpeed conforme toggle
         game:GetService("RunService").Heartbeat:Connect(function()
             local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
@@ -106,16 +118,17 @@ Button.MouseButton1Click:Connect(function()
             end
         end)
 
+        -- Função para atualizar os toggles e evitar loop
         local function setSpeedToggle(normalValue, rageValue)
+            updating = true
             speedOn = normalValue
             speedRageOn = rageValue
-
-            updating = true
             Tab:SetToggle("SpeedHackToggle", normalValue)
             Tab:SetToggle("SpeedHackRageToggle", rageValue)
             updating = false
         end
 
+        -- Speed Hack normal
         Tab:CreateToggle({
             Name = "Speed Hack",
             CurrentValue = false,
@@ -130,6 +143,7 @@ Button.MouseButton1Click:Connect(function()
             end,
         })
 
+        -- Speed Hack Rage
         Tab:CreateToggle({
             Name = "Speed Hack Rage",
             CurrentValue = false,
@@ -144,6 +158,7 @@ Button.MouseButton1Click:Connect(function()
             end,
         })
 
+        -- Infinite Jump
         game:GetService("UserInputService").JumpRequest:Connect(function()
             if infiniteJumpOn then
                 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -162,6 +177,7 @@ Button.MouseButton1Click:Connect(function()
             end,
         })
 
+        -- No Clip
         game:GetService("RunService").Stepped:Connect(function()
             if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
@@ -181,6 +197,7 @@ Button.MouseButton1Click:Connect(function()
             end,
         })
 
+        -- Salvar posição
         Tab:CreateButton({
             Name = "Salvar Posição",
             Callback = function()
@@ -192,6 +209,7 @@ Button.MouseButton1Click:Connect(function()
             end,
         })
 
+        -- Teleportar para a posição salva
         Tab:CreateButton({
             Name = "Teleportar",
             Callback = function()
@@ -202,8 +220,6 @@ Button.MouseButton1Click:Connect(function()
                 end
             end,
         })
-
-        showNotification("Key aceita! Bem-vindo(a).")
 
     else
         Button.Text = "Key incorreta!"
