@@ -45,6 +45,36 @@ Button.MouseButton1Click:Connect(function()
     if TextBox.Text == "GP" then
         ScreenGui:Destroy()
 
+local function showNotification(text)
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+    
+    local notifFrame = Instance.new("Frame")
+    notifFrame.Size = UDim2.new(0, 300, 0, 50)
+    notifFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
+    notifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    notifFrame.BackgroundTransparency = 0.3
+    notifFrame.BorderSizePixel = 0
+    notifFrame.Parent = playerGui
+    
+    local notifLabel = Instance.new("TextLabel")
+    notifLabel.Size = UDim2.new(1, 0, 1, 0)
+    notifLabel.BackgroundTransparency = 1
+    notifLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notifLabel.Font = Enum.Font.GothamBold
+    notifLabel.TextScaled = true
+    notifLabel.Text = text
+    notifLabel.Parent = notifFrame
+    
+    task.delay(3, function()
+        for i = 1, 10 do
+            notifFrame.BackgroundTransparency = notifFrame.BackgroundTransparency + 0.07
+            notifLabel.TextTransparency = notifLabel.TextTransparency + 0.07
+            task.wait(0.05)
+        end
+        notifFrame:Destroy()
+    end)
+end
+
         local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
         local Window = Rayfield:CreateWindow({
             Name = "Brazuca God",
@@ -78,16 +108,25 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
+local function setSpeedToggle(normalValue, rageValue)
+    speedOn = normalValue
+    speedRageOn = rageValue
+
+    -- Atualiza visualmente os toggles
+    Tab:SetToggle("SpeedHackToggle", normalValue)
+    Tab:SetToggle("SpeedHackRageToggle", rageValue)
+end
+
 -- SPEED HACK NORMAL
 Tab:CreateToggle({
     Name = "Speed Hack",
     CurrentValue = false,
     Flag = "SpeedHackToggle",
     Callback = function(value)
-        speedOn = value
         if value then
-            speedRageOn = false
-            Tab:SetToggle("SpeedHackRageToggle", false) -- desativa rage no toggle visual
+            setSpeedToggle(true, false)
+        else
+            setSpeedToggle(false, false)
         end
     end,
 })
@@ -98,14 +137,13 @@ Tab:CreateToggle({
     CurrentValue = false,
     Flag = "SpeedHackRageToggle",
     Callback = function(value)
-        speedRageOn = value
         if value then
-            speedOn = false
-            Tab:SetToggle("SpeedHackToggle", false) -- desativa normal no toggle visual
+            setSpeedToggle(false, true)
+        else
+            setSpeedToggle(false, false)
         end
     end,
 })
-
         -- INFINITE JUMP
         game:GetService("UserInputService").JumpRequest:Connect(function()
             if infiniteJumpOn then
@@ -146,36 +184,28 @@ Tab:CreateToggle({
         })
 
         -- SALVAR POSIÇÃO
-        Tab:CreateButton({
-            Name = "Salvar Posição",
-            Callback = function()
-                local char = LocalPlayer.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    savedPosition = char.HumanoidRootPart.Position
-                    Window:Notify({
-                        Title = "Brazuca God",
-                        Content = "Posição Salva com Sucesso!",
-                        Duration = 3
-                    })
-                end
-            end
-        })
+Tab:CreateButton({
+    Name = "Salvar Posição",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            savedPosition = char.HumanoidRootPart.Position
+            showNotification("Posição Salva com Sucesso!")
+        end
+    end
+})
 
-        -- TELEPORTAR
-        Tab:CreateButton({
-            Name = "Teleportar",
-            Callback = function()
-                local char = LocalPlayer.Character
-                if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
-                    char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-                    Window:Notify({
-                        Title = "Brazuca God",
-                        Content = "Teleportando...",
-                        Duration = 3
-                    })
-                end
-            end
-        })
+-- TELEPORTAR
+Tab:CreateButton({
+    Name = "Teleportar",
+    Callback = function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
+            char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+            showNotification("Teleportando...")
+        end
+    end
+})
 
     else
         Button.Text = "Key incorreta!"
