@@ -1,80 +1,164 @@
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
+--// ====== IMPORTAÇÕES ====== \\--
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
--- Criar GUI principal
-local gui = Instance.new("ScreenGui")
-gui.Name = "FluentMenu"
-gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-gui.ResetOnSpawn = false
+--// ====== CONFIGURAÇÃO DA JANELA ====== \\--
+local Window = Fluent:CreateWindow({
+    Title = "Fluent " .. Fluent.Version,
+    SubTitle = "by dawid",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true, -- Efeito de blur (pode ser detectável)
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
 
--- Botão flutuante
-local openButton = Instance.new("TextButton")
-openButton.Size = UDim2.new(0, 50, 0, 50)
-openButton.Position = UDim2.new(0, 20, 0.5, -25)
-openButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-openButton.Text = "≡"
-openButton.TextSize = 28
-openButton.TextColor3 = Color3.new(1,1,1)
-openButton.Font = Enum.Font.SourceSansBold
-openButton.Parent = gui
-openButton.BackgroundTransparency = 0.1
-openButton.AutoButtonColor = true
-openButton.BorderSizePixel = 0
-openButton.ZIndex = 2
-openButton.ClipsDescendants = true
+--// ====== ABAS ====== \\--
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
 
--- Menu principal
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 250, 0, 300)
-mainFrame.Position = UDim2.new(0, -260, 0.5, -150)
-mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-mainFrame.BackgroundTransparency = 0.2
-mainFrame.BorderSizePixel = 0
-mainFrame.Parent = gui
+local Options = Fluent.Options
 
--- Cantos arredondados
-local corner1 = Instance.new("UICorner", openButton)
-corner1.CornerRadius = UDim.new(0, 12)
-local corner2 = Instance.new("UICorner", mainFrame)
-corner2.CornerRadius = UDim.new(0, 16)
+--// ====== ELEMENTOS DA ABA MAIN ====== \\--
 
--- Efeito sombra
-local shadow = Instance.new("ImageLabel", mainFrame)
-shadow.Size = UDim2.new(1, 30, 1, 30)
-shadow.Position = UDim2.new(0, -15, 0, -15)
-shadow.BackgroundTransparency = 1
-shadow.Image = "rbxassetid://1316045217"
-shadow.ImageColor3 = Color3.new(0, 0, 0)
-shadow.ImageTransparency = 0.5
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-shadow.ZIndex = 0
+-- Notificação inicial
+Fluent:Notify({
+    Title = "Notification",
+    Content = "This is a notification",
+    SubContent = "SubContent",
+    Duration = 5
+})
 
--- Botão de exemplo no menu
-local buttonExample = Instance.new("TextButton")
-buttonExample.Size = UDim2.new(1, -20, 0, 40)
-buttonExample.Position = UDim2.new(0, 10, 0, 10)
-buttonExample.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-buttonExample.Text = "Ativar Função"
-buttonExample.TextSize = 20
-buttonExample.Font = Enum.Font.SourceSansBold
-buttonExample.TextColor3 = Color3.new(1,1,1)
-buttonExample.Parent = mainFrame
-local btnCorner = Instance.new("UICorner", buttonExample)
-btnCorner.CornerRadius = UDim.new(0, 8)
+-- Parágrafo
+Tabs.Main:AddParagraph({
+    Title = "Paragraph",
+    Content = "This is a paragraph.\nSecond line!"
+})
 
-buttonExample.MouseButton1Click:Connect(function()
-    print("Função ativada!")
-end)
-
--- Abrir / Fechar com animação
-local aberto = false
-openButton.MouseButton1Click:Connect(function()
-    if aberto then
-        TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Position = UDim2.new(0, -260, 0.5, -150)}):Play()
-    else
-        TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Position = UDim2.new(0, 60, 0.5, -150)}):Play()
+-- Botão com diálogo
+Tabs.Main:AddButton({
+    Title = "Button",
+    Description = "Very important button",
+    Callback = function()
+        Window:Dialog({
+            Title = "Title",
+            Content = "This is a dialog",
+            Buttons = {
+                { Title = "Confirm", Callback = function() print("Confirmed the dialog.") end },
+                { Title = "Cancel", Callback = function() print("Cancelled the dialog.") end }
+            }
+        })
     end
-    aberto = not aberto
+})
+
+-- Toggle (On/Off)
+local Toggle = Tabs.Main:AddToggle("MyToggle", { Title = "Toggle", Default = false })
+Toggle:OnChanged(function()
+    print("Toggle changed:", Options.MyToggle.Value)
 end)
+Options.MyToggle:SetValue(false)
+
+-- Slider
+local Slider = Tabs.Main:AddSlider("Slider", {
+    Title = "Slider",
+    Description = "This is a slider",
+    Default = 2,
+    Min = 0,
+    Max = 5,
+    Rounding = 1,
+    Callback = function(Value) print("Slider was changed:", Value) end
+})
+Slider:OnChanged(function(Value) print("Slider changed:", Value) end)
+Slider:SetValue(3)
+
+-- Dropdown simples
+local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
+    Title = "Dropdown",
+    Values = { "one", "two", "three", "four", "five", "six" },
+    Multi = false,
+    Default = 1
+})
+Dropdown:SetValue("four")
+Dropdown:OnChanged(function(Value) print("Dropdown changed:", Value) end)
+
+-- Dropdown múltiplo
+local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
+    Title = "Dropdown",
+    Description = "You can select multiple values.",
+    Values = { "one", "two", "three", "four", "five" },
+    Multi = true,
+    Default = { "seven", "twelve" }
+})
+MultiDropdown:SetValue({ three = true, five = true, seven = false })
+MultiDropdown:OnChanged(function(Value)
+    local Values = {}
+    for Value, State in next, Value do
+        table.insert(Values, Value)
+    end
+    print("Mutlidropdown changed:", table.concat(Values, ", "))
+end)
+
+-- Colorpicker simples
+local Colorpicker = Tabs.Main:AddColorpicker("Colorpicker", {
+    Title = "Colorpicker",
+    Default = Color3.fromRGB(96, 205, 255)
+})
+Colorpicker:OnChanged(function()
+    print("Colorpicker changed:", Colorpicker.Value)
+end)
+Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
+
+-- Colorpicker com transparência
+local TColorpicker = Tabs.Main:AddColorpicker("TransparencyColorpicker", {
+    Title = "Colorpicker",
+    Description = "but you can change the transparency.",
+    Transparency = 0,
+    Default = Color3.fromRGB(96, 205, 255)
+})
+TColorpicker:OnChanged(function()
+    print("TColorpicker changed:", TColorpicker.Value, "Transparency:", TColorpicker.Transparency)
+end)
+
+-- Keybind
+local Keybind = Tabs.Main:AddKeybind("Keybind", {
+    Title = "KeyBind",
+    Mode = "Toggle",
+    Default = "LeftControl",
+    Callback = function(Value) print("Keybind clicked!", Value) end,
+    ChangedCallback = function(New) print("Keybind changed!", New) end
+})
+Keybind:OnClick(function() print("Keybind clicked:", Keybind:GetState()) end)
+Keybind:OnChanged(function() print("Keybind changed:", Keybind.Value) end)
+
+-- Input
+local Input = Tabs.Main:AddInput("Input", {
+    Title = "Input",
+    Default = "Default",
+    Placeholder = "Placeholder",
+    Numeric = false,
+    Finished = false,
+    Callback = function(Value) print("Input changed:", Value) end
+})
+Input:OnChanged(function() print("Input updated:", Input.Value) end)
+
+--// ====== ADDONS ====== \\--
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("FluentScriptHub")
+SaveManager:SetFolder("FluentScriptHub/specific-game")
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
+
+--// ====== FINALIZAÇÃO ====== \\--
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Fluent",
+    Content = "The script has been loaded.",
+    Duration = 8
+})
+SaveManager:LoadAutoloadConfig()
