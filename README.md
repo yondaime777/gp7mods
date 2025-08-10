@@ -1,9 +1,7 @@
+-- SISTEMA DE KEY
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- GUI para Key (igual seu original)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -43,36 +41,50 @@ Button.Font = Enum.Font.GothamBold
 Button.TextScaled = true
 Button.Parent = Frame
 
+local function SimpleNotify(text)
+    local notifGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+    notifGui.Name = "SimpleNotifyGui"
+    local label = Instance.new("TextLabel", notifGui)
+    label.Text = text
+    label.Size = UDim2.new(0, 300, 0, 50)
+    label.Position = UDim2.new(0.5, -150, 0.1, 0)
+    label.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    label.TextColor3 = Color3.new(1,1,1)
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.BackgroundTransparency = 0.2
+    label.ZIndex = 1000
+
+    delay(3, function()
+        notifGui:Destroy()
+    end)
+end
+
 Button.MouseButton1Click:Connect(function()
     if TextBox.Text == "GP" then
         ScreenGui:Destroy()
-
-        -- Tocar som ao abrir o menu
-        local sound = Instance.new("Sound", workspace)
-        sound.SoundId = "rbxassetid://142376088" -- som simples de confirmação
-        sound.Volume = 0.5
-        sound:Play()
-        game.Debris:AddItem(sound, 3)
 
         local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
         local Window = Rayfield:CreateWindow({
             Name = "Brazuca God",
             LoadingTitle = "Carregando...",
             LoadingSubtitle = "By GP7",
-            ConfigurationSaving = { Enabled = false }
+            ConfigurationSaving = {
+                Enabled = false
+            }
         })
 
         local Tab = Window:CreateTab("Funções", 4483362458)
 
-        -- Variáveis controle
+        -- Variáveis globais
         local speedOn = false
         local speedRageOn = false
         local infiniteJumpOn = false
         local noclipOn = false
         local savedPosition = nil
 
-        -- Função para manter speed constante
-        RunService.Heartbeat:Connect(function()
+        -- Função para manter WalkSpeed constante (corrige erros)
+        game:GetService("RunService").Heartbeat:Connect(function()
             local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 if speedRageOn then
@@ -83,47 +95,32 @@ Button.MouseButton1Click:Connect(function()
                     humanoid.WalkSpeed = 16
                 end
             end
-
-            -- Noclip
-            if noclipOn and LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
         end)
 
-        -- Speed Hack normal toggle
+        -- SPEED HACK NORMAL (toggle)
         Tab:CreateToggle({
             Name = "Speed Hack",
             CurrentValue = false,
-            Flag = "SpeedHack",
+            Flag = "SpeedHackToggle",
             Callback = function(value)
                 speedOn = value
-                if value then
-                    speedRageOn = false -- desativa rage se speed normal ativado
-                    Window.Flags["SpeedHack Rage"] = false
-                end
-            end
+                if value then speedRageOn = false end -- desliga rage se normal ligado
+            end,
         })
 
-        -- Speed Hack Rage toggle
+        -- SPEED HACK RAGE (toggle)
         Tab:CreateToggle({
             Name = "Speed Hack Rage",
             CurrentValue = false,
-            Flag = "SpeedHack Rage",
+            Flag = "SpeedHackRageToggle",
             Callback = function(value)
                 speedRageOn = value
-                if value then
-                    speedOn = false -- desativa speed normal se rage ativado
-                    Window.Flags["Speed Hack"] = false
-                end
-            end
+                if value then speedOn = false end -- desliga normal se rage ligado
+            end,
         })
 
-        -- Infinite Jump toggle
-        UserInputService.JumpRequest:Connect(function()
+        -- INFINITE JUMP
+        game:GetService("UserInputService").JumpRequest:Connect(function()
             if infiniteJumpOn then
                 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
                 if humanoid then
@@ -135,50 +132,52 @@ Button.MouseButton1Click:Connect(function()
         Tab:CreateToggle({
             Name = "Infinite Jump",
             CurrentValue = false,
-            Flag = "InfiniteJump",
+            Flag = "InfiniteJumpToggle",
             Callback = function(value)
                 infiniteJumpOn = value
-            end
+            end,
         })
 
-        -- Noclip toggle
+        -- NOCLIP
+        game:GetService("RunService").Stepped:Connect(function()
+            if noclipOn and LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+
         Tab:CreateToggle({
             Name = "No Clip",
             CurrentValue = false,
-            Flag = "NoClip",
+            Flag = "NoClipToggle",
             Callback = function(value)
                 noclipOn = value
-            end
+            end,
         })
 
-        -- Salvar posição com notificação
+        -- SALVAR POSIÇÃO
         Tab:CreateButton({
             Name = "Salvar Posição",
             Callback = function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     savedPosition = char.HumanoidRootPart.Position
-                    Window:Notify({
-                        Title = "Brazuca God",
-                        Content = "Posição Salva com Sucesso!",
-                        Duration = 3
-                    })
+                    SimpleNotify("Posição Salva com Sucesso!")
                 end
             end
         })
 
-        -- Teleportar com notificação
+        -- TELEPORTAR
         Tab:CreateButton({
             Name = "Teleportar",
             Callback = function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
                     char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-                    Window:Notify({
-                        Title = "Brazuca God",
-                        Content = "Teleportando...",
-                        Duration = 2
-                    })
+                    SimpleNotify("Teleportando...")
                 end
             end
         })
