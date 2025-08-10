@@ -1,6 +1,35 @@
--- SISTEMA DE KEY
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+
+local function showNotification(text)
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+    local notifFrame = Instance.new("Frame")
+    notifFrame.Size = UDim2.new(0, 300, 0, 50)
+    notifFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
+    notifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    notifFrame.BackgroundTransparency = 0.3
+    notifFrame.BorderSizePixel = 0
+    notifFrame.Parent = playerGui
+
+    local notifLabel = Instance.new("TextLabel")
+    notifLabel.Size = UDim2.new(1, 0, 1, 0)
+    notifLabel.BackgroundTransparency = 1
+    notifLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notifLabel.Font = Enum.Font.GothamBold
+    notifLabel.TextScaled = true
+    notifLabel.Text = text
+    notifLabel.Parent = notifFrame
+
+    task.delay(3, function()
+        for i = 1, 10 do
+            notifFrame.BackgroundTransparency = notifFrame.BackgroundTransparency + 0.07
+            notifLabel.TextTransparency = notifLabel.TextTransparency + 0.07
+            task.wait(0.05)
+        end
+        notifFrame:Destroy()
+    end)
+end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -41,110 +70,80 @@ Button.Font = Enum.Font.GothamBold
 Button.TextScaled = true
 Button.Parent = Frame
 
+local updating = false
+
 Button.MouseButton1Click:Connect(function()
     if TextBox.Text == "GP" then
         ScreenGui:Destroy()
 
-local function showNotification(text)
-    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
-    
-    local notifFrame = Instance.new("Frame")
-    notifFrame.Size = UDim2.new(0, 300, 0, 50)
-    notifFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
-    notifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    notifFrame.BackgroundTransparency = 0.3
-    notifFrame.BorderSizePixel = 0
-    notifFrame.Parent = playerGui
-    
-    local notifLabel = Instance.new("TextLabel")
-    notifLabel.Size = UDim2.new(1, 0, 1, 0)
-    notifLabel.BackgroundTransparency = 1
-    notifLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    notifLabel.Font = Enum.Font.GothamBold
-    notifLabel.TextScaled = true
-    notifLabel.Text = text
-    notifLabel.Parent = notifFrame
-    
-    task.delay(3, function()
-        for i = 1, 10 do
-            notifFrame.BackgroundTransparency = notifFrame.BackgroundTransparency + 0.07
-            notifLabel.TextTransparency = notifLabel.TextTransparency + 0.07
-            task.wait(0.05)
-        end
-        notifFrame:Destroy()
-    end)
-end
-
+        -- MENU
         local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
         local Window = Rayfield:CreateWindow({
             Name = "Brazuca God",
             LoadingTitle = "Carregando...",
             LoadingSubtitle = "By GP7",
-            ConfigurationSaving = {
-                Enabled = false
-            }
+            ConfigurationSaving = { Enabled = false }
         })
 
         local Tab = Window:CreateTab("Funções", 4483362458)
 
-        -- Variáveis globais
         local speedOn = false
         local speedRageOn = false
         local infiniteJumpOn = false
         local noclipOn = false
         local savedPosition = nil
 
-        -- Função que mantém o WalkSpeed de acordo com o toggle
-game:GetService("RunService").Heartbeat:Connect(function()
-    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        if speedRageOn then
-            humanoid.WalkSpeed = 200
-        elseif speedOn then
-            humanoid.WalkSpeed = 32
-        else
-            humanoid.WalkSpeed = 16
+        game:GetService("RunService").Heartbeat:Connect(function()
+            local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                if speedRageOn then
+                    humanoid.WalkSpeed = 200
+                elseif speedOn then
+                    humanoid.WalkSpeed = 32
+                else
+                    humanoid.WalkSpeed = 16
+                end
+            end
+        end)
+
+        local function setSpeedToggle(normalValue, rageValue)
+            speedOn = normalValue
+            speedRageOn = rageValue
+
+            updating = true
+            Tab:SetToggle("SpeedHackToggle", normalValue)
+            Tab:SetToggle("SpeedHackRageToggle", rageValue)
+            updating = false
         end
-    end
-end)
 
-local function setSpeedToggle(normalValue, rageValue)
-    speedOn = normalValue
-    speedRageOn = rageValue
+        Tab:CreateToggle({
+            Name = "Speed Hack",
+            CurrentValue = false,
+            Flag = "SpeedHackToggle",
+            Callback = function(value)
+                if updating then return end
+                if value then
+                    setSpeedToggle(true, false)
+                else
+                    setSpeedToggle(false, false)
+                end
+            end,
+        })
 
-    -- Atualiza visualmente os toggles
-    Tab:SetToggle("SpeedHackToggle", normalValue)
-    Tab:SetToggle("SpeedHackRageToggle", rageValue)
-end
+        Tab:CreateToggle({
+            Name = "Speed Hack Rage",
+            CurrentValue = false,
+            Flag = "SpeedHackRageToggle",
+            Callback = function(value)
+                if updating then return end
+                if value then
+                    setSpeedToggle(false, true)
+                else
+                    setSpeedToggle(false, false)
+                end
+            end,
+        })
 
--- SPEED HACK NORMAL
-Tab:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = false,
-    Flag = "SpeedHackToggle",
-    Callback = function(value)
-        if value then
-            setSpeedToggle(true, false)
-        else
-            setSpeedToggle(false, false)
-        end
-    end,
-})
-
--- SPEED HACK RAGE
-Tab:CreateToggle({
-    Name = "Speed Hack Rage",
-    CurrentValue = false,
-    Flag = "SpeedHackRageToggle",
-    Callback = function(value)
-        if value then
-            setSpeedToggle(false, true)
-        else
-            setSpeedToggle(false, false)
-        end
-    end,
-})
-        -- INFINITE JUMP
         game:GetService("UserInputService").JumpRequest:Connect(function()
             if infiniteJumpOn then
                 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -163,7 +162,6 @@ Tab:CreateToggle({
             end,
         })
 
-        -- NOCLIP
         game:GetService("RunService").Stepped:Connect(function()
             if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
@@ -183,29 +181,29 @@ Tab:CreateToggle({
             end,
         })
 
-        -- SALVAR POSIÇÃO
-Tab:CreateButton({
-    Name = "Salvar Posição",
-    Callback = function()
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            savedPosition = char.HumanoidRootPart.Position
-            showNotification("Posição Salva com Sucesso!")
-        end
-    end
-})
+        Tab:CreateButton({
+            Name = "Salvar Posição",
+            Callback = function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    savedPosition = char.HumanoidRootPart.Position
+                    showNotification("Posição Salva com Sucesso!")
+                end
+            end,
+        })
 
--- TELEPORTAR
-Tab:CreateButton({
-    Name = "Teleportar",
-    Callback = function()
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
-            char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-            showNotification("Teleportando...")
-        end
-    end
-})
+        Tab:CreateButton({
+            Name = "Teleportar",
+            Callback = function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
+                    char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+                    showNotification("Teleportando...")
+                end
+            end,
+        })
+
+        showNotification("Key aceita! Bem-vindo(a).")
 
     else
         Button.Text = "Key incorreta!"
