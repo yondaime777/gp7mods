@@ -1,4 +1,3 @@
-q
 -- SISTEMA DE KEY
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
