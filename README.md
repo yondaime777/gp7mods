@@ -42,7 +42,7 @@ Button.TextScaled = true
 Button.Parent = Frame
 
 Button.MouseButton1Click:Connect(function()
-if TextBox.Text == "GP" then
+if TextBox.Text == "GGG" then
 ScreenGui:Destroy()
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()  
