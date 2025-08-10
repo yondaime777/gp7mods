@@ -1,159 +1,80 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
-
-print("[GP7Menu] Iniciando script...")
 
 -- Criar GUI principal
 local gui = Instance.new("ScreenGui")
-gui.Name = "GP7Menu"
-gui.ResetOnSpawn = false
+gui.Name = "FluentMenu"
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 400)
-frame.Position = UDim2.new(0, 20, 0.4, 0)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-frame.BackgroundTransparency = 0.4
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Visible = true -- garante visibilidade inicial
+-- Botão flutuante
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 50, 0, 50)
+openButton.Position = UDim2.new(0, 20, 0.5, -25)
+openButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+openButton.Text = "≡"
+openButton.TextSize = 28
+openButton.TextColor3 = Color3.new(1,1,1)
+openButton.Font = Enum.Font.SourceSansBold
+openButton.Parent = gui
+openButton.BackgroundTransparency = 0.1
+openButton.AutoButtonColor = true
+openButton.BorderSizePixel = 0
+openButton.ZIndex = 2
+openButton.ClipsDescendants = true
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "GP7 MODS"
-title.TextColor3 = Color3.fromRGB(0, 255, 0)
-title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-title.Font = Enum.Font.GothamBold
-title.TextScaled = true
+-- Menu principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 250, 0, 300)
+mainFrame.Position = UDim2.new(0, -260, 0.5, -150)
+mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = gui
 
--- Botão flutuante minimizar
-local floatBtn = Instance.new("TextButton", gui)
-floatBtn.Text = "GP7"
-floatBtn.Size = UDim2.new(0, 60, 0, 35)
-floatBtn.Position = UDim2.new(0, 10, 0, 10)
-floatBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-floatBtn.TextColor3 = Color3.new(0, 0, 0)
-floatBtn.Visible = false
-floatBtn.Font = Enum.Font.GothamBold
-floatBtn.TextScaled = true
+-- Cantos arredondados
+local corner1 = Instance.new("UICorner", openButton)
+corner1.CornerRadius = UDim.new(0, 12)
+local corner2 = Instance.new("UICorner", mainFrame)
+corner2.CornerRadius = UDim.new(0, 16)
 
-floatBtn.MouseButton1Click:Connect(function()
-    print("[GP7Menu] Abrindo menu...")
-    frame.Visible = true
-    floatBtn.Visible = false
+-- Efeito sombra
+local shadow = Instance.new("ImageLabel", mainFrame)
+shadow.Size = UDim2.new(1, 30, 1, 30)
+shadow.Position = UDim2.new(0, -15, 0, -15)
+shadow.BackgroundTransparency = 1
+shadow.Image = "rbxassetid://1316045217"
+shadow.ImageColor3 = Color3.new(0, 0, 0)
+shadow.ImageTransparency = 0.5
+shadow.ScaleType = Enum.ScaleType.Slice
+shadow.SliceCenter = Rect.new(10, 10, 118, 118)
+shadow.ZIndex = 0
+
+-- Botão de exemplo no menu
+local buttonExample = Instance.new("TextButton")
+buttonExample.Size = UDim2.new(1, -20, 0, 40)
+buttonExample.Position = UDim2.new(0, 10, 0, 10)
+buttonExample.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+buttonExample.Text = "Ativar Função"
+buttonExample.TextSize = 20
+buttonExample.Font = Enum.Font.SourceSansBold
+buttonExample.TextColor3 = Color3.new(1,1,1)
+buttonExample.Parent = mainFrame
+local btnCorner = Instance.new("UICorner", buttonExample)
+btnCorner.CornerRadius = UDim.new(0, 8)
+
+buttonExample.MouseButton1Click:Connect(function()
+    print("Função ativada!")
 end)
 
--- Criar botões automáticos
-local buttonY = 50 -- espaçamento vertical
-local buttonIndex = 0
-local function createButton(text, callback)
-    local btn = Instance.new("TextButton", frame)
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 50 + (buttonIndex * buttonY))
-    btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-    btn.TextColor3 = Color3.fromRGB(0, 255, 0)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextScaled = true
-    btn.Text = text
-    btn.BorderSizePixel = 0
-    btn.MouseButton1Click:Connect(function()
-        print("[GP7Menu] Botão clicado: " .. text)
-        callback(btn)
-    end)
-    buttonIndex += 1
-    return btn
-end
-
--- ===== SISTEMA DE VELOCIDADE =====
-local speedMode = 0 -- 0 = normal, 1 = rápido, 2 = ultra
-local SPEEDS = {16, 32, 200}
-
-local function maintainSpeed()
-    local character = LocalPlayer.Character
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    humanoid.WalkSpeed = SPEEDS[speedMode + 1]
-end
-RunService.Heartbeat:Connect(maintainSpeed)
-
-createButton("Velocidade: Normal", function(btn)
-    speedMode = (speedMode + 1) % 3
-    local nomes = {"Normal", "Rápida", "Ultra Rápida"}
-    btn.Text = "Velocidade: " .. nomes[speedMode + 1]
-    print("[GP7Menu] Velocidade alterada para: " .. nomes[speedMode + 1])
-end)
-
--- ===== INFINITE JUMP =====
-local infiniteJumpOn = false
-UserInputService.JumpRequest:Connect(function()
-    if infiniteJumpOn then
-        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
-createButton("Pulo Infinito OFF", function(btn)
-    infiniteJumpOn = not infiniteJumpOn
-    btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
-    print("[GP7Menu] Pulo Infinito: " .. (infiniteJumpOn and "ON" or "OFF"))
-end)
-
--- ===== TELEPORTE =====
-local savedPosition = nil
-
-createButton("Salvar Posição", function()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        savedPosition = char.HumanoidRootPart.Position
-        print("[Teleport] Posição salva:", savedPosition)
+-- Abrir / Fechar com animação
+local aberto = false
+openButton.MouseButton1Click:Connect(function()
+    if aberto then
+        TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Position = UDim2.new(0, -260, 0.5, -150)}):Play()
     else
-        print("[Teleport] Personagem não encontrado para salvar posição.")
+        TweenService:Create(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Position = UDim2.new(0, 60, 0.5, -150)}):Play()
     end
+    aberto = not aberto
 end)
-
-createButton("Teleportar", function()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
-        char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-        print("[Teleport] Teleportado para posição salva!")
-    else
-        print("[Teleport] Nenhuma posição salva para teleportar!")
-    end
-end)
-
--- ===== NOCLIP =====
-local noclipOn = false
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if noclipOn then
-                    part.CanCollide = false
-                else
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
-end)
-
-createButton("Noclip OFF", function(btn)
-    noclipOn = not noclipOn
-    btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
-    print("[GP7Menu] Noclip: " .. (noclipOn and "ON" or "OFF"))
-end)
-
--- ===== MINIMIZAR =====
-createButton("Minimizar", function()
-    frame.Visible = false
-    floatBtn.Visible = true
-    print("[GP7Menu] Menu minimizado")
-end)
-
-print("[GP7Menu] Script carregado com sucesso!")
