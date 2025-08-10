@@ -1,67 +1,79 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
 local LocalPlayer = Players.LocalPlayer
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Brazuca God",
-    LoadingTitle = "Carregando Brazuca God",
+    LoadingTitle = "Brazuca God",
     LoadingSubtitle = "by GP7",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = nil,
-        FileName = "ConfigBrazucaGod"
-    }
+        FolderName = "BrazucaGod",
+        FileName = "Config"
+    },
+    Discord = {
+        Enabled = false,
+    },
+    KeySystem = false,
 })
 
-local Tab = Window:CreateTab("Principal", 4483362458)
+local Tab = Window:CreateTab("Funções")
 
--- Variáveis internas
-local speedMode = 0 -- 0=normal,1=rápido,2=ultra
-local SPEEDS = {16, 32, 200}
+local speedEnabled = false
+local rageEnabled = false
+local speedValue = 16
 local infiniteJumpOn = false
 local noclipOn = false
 local savedPosition = nil
 
--- Função para manter velocidade
-local function maintainSpeed()
+-- Speed Hack e Speed Rage
+RunService.Heartbeat:Connect(function()
     local character = LocalPlayer.Character
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    humanoid.WalkSpeed = SPEEDS[speedMode + 1]
-end
-RunService.Heartbeat:Connect(maintainSpeed)
+    if character then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if rageEnabled then
+                humanoid.WalkSpeed = 200
+            elseif speedEnabled then
+                humanoid.WalkSpeed = 32
+            else
+                humanoid.WalkSpeed = 16
+            end
+        end
+    end
+end)
 
--- Botão Toggle: Velocidade
-local SpeedToggle = Tab:CreateToggle({
-    Name = "Speed Mode",
+local speedToggle = Tab:CreateToggle({
+    Name = "Speed Hack",
     CurrentValue = false,
-    Flag = "SpeedToggle",
-    Callback = function(enabled)
-        if enabled then
-            speedMode = (speedMode + 1) % 3
-            print("[BrazucaGod] Velocidade alterada para modo " .. speedMode)
-        else
-            speedMode = 0
-            print("[BrazucaGod] Velocidade normal ativada")
+    Flag = "SpeedHack",
+    Callback = function(value)
+        speedEnabled = value
+        if value then
+            rageToggle:Set(false)
         end
     end
 })
 
--- Botão Toggle: Pulo Infinito
-local InfiniteJumpToggle = Tab:CreateToggle({
-    Name = "Pulo Infinito",
+local rageToggle = Tab:CreateToggle({
+    Name = "Speed Hack Rage (200)",
     CurrentValue = false,
-    Flag = "InfiniteJumpToggle",
-    Callback = function(enabled)
-        infiniteJumpOn = enabled
-        print("[BrazucaGod] Pulo Infinito: " .. (enabled and "ON" or "OFF"))
+    Flag = "SpeedRage",
+    Callback = function(value)
+        rageEnabled = value
+        if value then
+            speedEnabled = false
+            speedToggle:Set(false)
+        end
     end
 })
 
+-- Infinite Jump
 UserInputService.JumpRequest:Connect(function()
     if infiniteJumpOn then
         local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -71,17 +83,16 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Botão Toggle: Noclip
-local NoclipToggle = Tab:CreateToggle({
-    Name = "Noclip",
+local infiniteJumpToggle = Tab:CreateToggle({
+    Name = "Infinite Jump",
     CurrentValue = false,
-    Flag = "NoclipToggle",
-    Callback = function(enabled)
-        noclipOn = enabled
-        print("[BrazucaGod] Noclip: " .. (enabled and "ON" or "OFF"))
+    Flag = "InfiniteJump",
+    Callback = function(value)
+        infiniteJumpOn = value
     end
 })
 
+-- Noclip
 RunService.Stepped:Connect(function()
     if noclipOn and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
@@ -98,41 +109,50 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Botão para salvar posição
-local SavePosButton = Tab:CreateButton({
+local noclipToggle = Tab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Flag = "Noclip",
+    Callback = function(value)
+        noclipOn = value
+    end
+})
+
+-- Salvar posição com notificação
+Tab:CreateButton({
     Name = "Salvar Posição",
     Callback = function()
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             savedPosition = char.HumanoidRootPart.Position
-            print("[BrazucaGod] Posição salva:", savedPosition)
+            StarterGui:SetCore("SendNotification", {
+                Title = "Brazuca God",
+                Text = "Posição Salva Com Sucesso !",
+                Duration = 3
+            })
         else
-            print("[BrazucaGod] Personagem não encontrado para salvar posição.")
+            StarterGui:SetCore("SendNotification", {
+                Title = "Brazuca God",
+                Text = "Não foi possível salvar a posição.",
+                Duration = 3
+            })
         end
     end
 })
 
--- Botão para teleportar para posição salva
-local TeleportButton = Tab:CreateButton({
-    Name = "Teleportar para Posição Salva",
+-- Teleportar para posição salva
+Tab:CreateButton({
+    Name = "Teleportar para posição salva",
     Callback = function()
         local char = LocalPlayer.Character
         if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
             char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-            print("[BrazucaGod] Teleportado para posição salva!")
         else
-            print("[BrazucaGod] Nenhuma posição salva para teleportar!")
+            StarterGui:SetCore("SendNotification", {
+                Title = "Brazuca God",
+                Text = "Nenhuma posição salva para teleportar!",
+                Duration = 3
+            })
         end
     end
 })
-
--- Botão para minimizar menu
-local MinimizeButton = Tab:CreateButton({
-    Name = "Minimizar Menu",
-    Callback = function()
-        Window:Toggle()
-        print("[BrazucaGod] Menu minimizado/aberto.")
-    end
-})
-
-print("[BrazucaGod] Script carregado!")
