@@ -41,25 +41,6 @@ Button.Font = Enum.Font.GothamBold
 Button.TextScaled = true
 Button.Parent = Frame
 
-local function SimpleNotify(text)
-    local notifGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-    notifGui.Name = "SimpleNotifyGui"
-    local label = Instance.new("TextLabel", notifGui)
-    label.Text = text
-    label.Size = UDim2.new(0, 300, 0, 50)
-    label.Position = UDim2.new(0.5, -150, 0.1, 0)
-    label.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    label.TextColor3 = Color3.new(1,1,1)
-    label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
-    label.BackgroundTransparency = 0.2
-    label.ZIndex = 1000
-
-    delay(3, function()
-        notifGui:Destroy()
-    end)
-end
-
 Button.MouseButton1Click:Connect(function()
     if TextBox.Text == "GP" then
         ScreenGui:Destroy()
@@ -83,7 +64,7 @@ Button.MouseButton1Click:Connect(function()
         local noclipOn = false
         local savedPosition = nil
 
-        -- Função para manter WalkSpeed constante (corrige erros)
+        -- Função para manter WalkSpeed constante e evitar conflito
         game:GetService("RunService").Heartbeat:Connect(function()
             local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
@@ -97,25 +78,31 @@ Button.MouseButton1Click:Connect(function()
             end
         end)
 
-        -- SPEED HACK NORMAL (toggle)
+        -- SPEED HACK NORMAL
         Tab:CreateToggle({
             Name = "Speed Hack",
             CurrentValue = false,
             Flag = "SpeedHackToggle",
             Callback = function(value)
                 speedOn = value
-                if value then speedRageOn = false end -- desliga rage se normal ligado
+                if value then
+                    speedRageOn = false
+                    Tab:SetToggle("SpeedHackRageToggle", false) -- desativa rage no toggle visual
+                end
             end,
         })
 
-        -- SPEED HACK RAGE (toggle)
+        -- SPEED HACK RAGE
         Tab:CreateToggle({
             Name = "Speed Hack Rage",
             CurrentValue = false,
             Flag = "SpeedHackRageToggle",
             Callback = function(value)
                 speedRageOn = value
-                if value then speedOn = false end -- desliga normal se rage ligado
+                if value then
+                    speedOn = false
+                    Tab:SetToggle("SpeedHackToggle", false) -- desativa normal no toggle visual
+                end
             end,
         })
 
@@ -140,10 +127,10 @@ Button.MouseButton1Click:Connect(function()
 
         -- NOCLIP
         game:GetService("RunService").Stepped:Connect(function()
-            if noclipOn and LocalPlayer.Character then
+            if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
-                        part.CanCollide = false
+                        part.CanCollide = not noclipOn
                     end
                 end
             end
@@ -165,7 +152,11 @@ Button.MouseButton1Click:Connect(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     savedPosition = char.HumanoidRootPart.Position
-                    SimpleNotify("Posição Salva com Sucesso!")
+                    Window:Notify({
+                        Title = "Brazuca God",
+                        Content = "Posição Salva com Sucesso!",
+                        Duration = 3
+                    })
                 end
             end
         })
@@ -177,7 +168,11 @@ Button.MouseButton1Click:Connect(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
                     char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-                    SimpleNotify("Teleportando...")
+                    Window:Notify({
+                        Title = "Brazuca God",
+                        Content = "Teleportando...",
+                        Duration = 3
+                    })
                 end
             end
         })
