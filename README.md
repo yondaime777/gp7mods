@@ -130,10 +130,14 @@ end)
 -- ===== NOCLIP =====
 local noclipOn = false
 RunService.Stepped:Connect(function()
-    if noclipOn and LocalPlayer.Character then
+    if LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = false
+                if noclipOn then
+                    part.CanCollide = false
+                else
+                    part.CanCollide = true
+                end
             end
         end
     end
