@@ -1,3 +1,4 @@
+q
 -- SISTEMA DE KEY
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -64,47 +65,47 @@ Button.MouseButton1Click:Connect(function()
         local noclipOn = false
         local savedPosition = nil
 
-        -- Função para manter WalkSpeed constante e evitar conflito
-        game:GetService("RunService").Heartbeat:Connect(function()
-            local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                if speedRageOn then
-                    humanoid.WalkSpeed = 200
-                elseif speedOn then
-                    humanoid.WalkSpeed = 32
-                else
-                    humanoid.WalkSpeed = 16
-                end
-            end
-        end)
+        -- Função que mantém o WalkSpeed de acordo com o toggle
+game:GetService("RunService").Heartbeat:Connect(function()
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if speedRageOn then
+            humanoid.WalkSpeed = 200
+        elseif speedOn then
+            humanoid.WalkSpeed = 32
+        else
+            humanoid.WalkSpeed = 16
+        end
+    end
+end)
 
-        -- SPEED HACK NORMAL
-        Tab:CreateToggle({
-            Name = "Speed Hack",
-            CurrentValue = false,
-            Flag = "SpeedHackToggle",
-            Callback = function(value)
-                speedOn = value
-                if value then
-                    speedRageOn = false
-                    Tab:SetToggle("SpeedHackRageToggle", false) -- desativa rage no toggle visual
-                end
-            end,
-        })
+-- SPEED HACK NORMAL
+Tab:CreateToggle({
+    Name = "Speed Hack",
+    CurrentValue = false,
+    Flag = "SpeedHackToggle",
+    Callback = function(value)
+        speedOn = value
+        if value then
+            speedRageOn = false
+            Tab:SetToggle("SpeedHackRageToggle", false) -- desativa rage no toggle visual
+        end
+    end,
+})
 
-        -- SPEED HACK RAGE
-        Tab:CreateToggle({
-            Name = "Speed Hack Rage",
-            CurrentValue = false,
-            Flag = "SpeedHackRageToggle",
-            Callback = function(value)
-                speedRageOn = value
-                if value then
-                    speedOn = false
-                    Tab:SetToggle("SpeedHackToggle", false) -- desativa normal no toggle visual
-                end
-            end,
-        })
+-- SPEED HACK RAGE
+Tab:CreateToggle({
+    Name = "Speed Hack Rage",
+    CurrentValue = false,
+    Flag = "SpeedHackRageToggle",
+    Callback = function(value)
+        speedRageOn = value
+        if value then
+            speedOn = false
+            Tab:SetToggle("SpeedHackToggle", false) -- desativa normal no toggle visual
+        end
+    end,
+})
 
         -- INFINITE JUMP
         game:GetService("UserInputService").JumpRequest:Connect(function()
