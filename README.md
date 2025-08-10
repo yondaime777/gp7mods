@@ -45,57 +45,26 @@ Button.MouseButton1Click:Connect(function()
 if TextBox.Text == "GP" then
 ScreenGui:Destroy()
 
-local function showNotification(text)
-local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()  
+    local Window = Rayfield:CreateWindow({  
+        Name = "Brazuca God",  
+        LoadingTitle = "Carregando...",  
+        LoadingSubtitle = "By GP7",  
+        ConfigurationSaving = {  
+            Enabled = false  
+        }  
+    })  
 
-local notifFrame = Instance.new("Frame")
-notifFrame.Size = UDim2.new(0, 300, 0, 50)
-notifFrame.Position = UDim2.new(0.5, -150, 0.1, 0)
-notifFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-notifFrame.BackgroundTransparency = 0.3
-notifFrame.BorderSizePixel = 0
-notifFrame.Parent = playerGui
+    local Tab = Window:CreateTab("Funções", 4483362458)  
 
-local notifLabel = Instance.new("TextLabel")
-notifLabel.Size = UDim2.new(1, 0, 1, 0)
-notifLabel.BackgroundTransparency = 1
-notifLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-notifLabel.Font = Enum.Font.GothamBold
-notifLabel.TextScaled = true
-notifLabel.Text = text
-notifLabel.Parent = notifFrame
+    -- Variáveis globais  
+    local speedOn = false  
+    local speedRageOn = false  
+    local infiniteJumpOn = false  
+    local noclipOn = false  
+    local savedPosition = nil  
 
-task.delay(3, function()
-for i = 1, 10 do
-notifFrame.BackgroundTransparency = notifFrame.BackgroundTransparency + 0.07
-notifLabel.TextTransparency = notifLabel.TextTransparency + 0.07
-task.wait(0.05)
-end
-notifFrame:Destroy()
-end)
-
-end
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-Name = "Brazuca God",
-LoadingTitle = "Carregando...",
-LoadingSubtitle = "By GP7",
-ConfigurationSaving = {
-Enabled = false
-}
-})
-
-local Tab = Window:CreateTab("Funções", 4483362458)    
-
--- Variáveis globais    
-local speedOn = false    
-local speedRageOn = false    
-local infiniteJumpOn = false    
-local noclipOn = false    
-local savedPosition = nil    
-
--- Função que mantém o WalkSpeed de acordo com o toggle
+    -- Função que mantém o WalkSpeed de acordo com o toggle
 
 game:GetService("RunService").Heartbeat:Connect(function()
 local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
@@ -114,8 +83,8 @@ local function setSpeedToggle(normalValue, rageValue)
 speedOn = normalValue
 speedRageOn = rageValue
 
--- Atualiza visualmente os toggles
-Tab:SetToggle("SpeedHackToggle", normalValue)
+-- Atualiza visualmente os toggles  
+Tab:SetToggle("SpeedHackToggle", normalValue)  
 Tab:SetToggle("SpeedHackRageToggle", rageValue)
 
 end
@@ -157,36 +126,36 @@ end
 end
 end)
 
-Tab:CreateToggle({
-Name = "Infinite Jump",
-CurrentValue = false,
-Flag = "InfiniteJumpToggle",
-Callback = function(value)
-infiniteJumpOn = value
-end,
-})
+Tab:CreateToggle({  
+        Name = "Infinite Jump",  
+        CurrentValue = false,  
+        Flag = "InfiniteJumpToggle",  
+        Callback = function(value)  
+            infiniteJumpOn = value  
+        end,  
+    })  
 
--- NOCLIP    
-game:GetService("RunService").Stepped:Connect(function()    
-    if LocalPlayer.Character then    
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do    
-            if part:IsA("BasePart") then    
-                part.CanCollide = not noclipOn    
-            end    
-        end    
-    end    
-end)    
+    -- NOCLIP  
+    game:GetService("RunService").Stepped:Connect(function()  
+        if LocalPlayer.Character then  
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do  
+                if part:IsA("BasePart") then  
+                    part.CanCollide = not noclipOn  
+                end  
+            end  
+        end  
+    end)  
 
-Tab:CreateToggle({    
-    Name = "No Clip",    
-    CurrentValue = false,    
-    Flag = "NoClipToggle",    
-    Callback = function(value)    
-        noclipOn = value    
-    end,    
-})    
+    Tab:CreateToggle({  
+        Name = "No Clip",  
+        CurrentValue = false,  
+        Flag = "NoClipToggle",  
+        Callback = function(value)  
+            noclipOn = value  
+        end,  
+    })  
 
--- SALVAR POSIÇÃO
+    -- SALVAR POSIÇÃO
 
 Tab:CreateButton({
 Name = "Salvar Posição",
@@ -211,12 +180,12 @@ end
 end
 })
 
-else
-Button.Text = "Key incorreta!"
-Button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-task.wait(1.5)
-Button.Text = "Confirmar"
-Button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+else  
+    Button.Text = "Key incorreta!"  
+    Button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)  
+    task.wait(1.5)  
+    Button.Text = "Confirmar"  
+    Button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)  
 end
 
 end)
