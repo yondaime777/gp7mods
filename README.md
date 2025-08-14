@@ -1,173 +1,155 @@
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
 
-local BrazucaHubGui = Instance.new("ScreenGui")
-BrazucaHubGui.Name = "BrazucaHubGui"
-BrazucaHubGui.Parent = playerGui
-BrazucaHubGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+print("[GP7Menu] Iniciando script...")
 
--- Menu principal
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = BrazucaHubGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
-MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 300, 0, 220)
-MainFrame.Visible = false -- inicia oculto
+-- Criar GUI principal
+local gui = Instance.new("ScreenGui")
+gui.Name = "GP7Menu"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Botão fechar "X"
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = MainFrame
-CloseButton.BackgroundColor3 = Color3.fromRGB(255,0,0)
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255,255,255)
-CloseButton.TextSize = 18
-CloseButton.Font = Enum.Font.SourceSansBold
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 220, 0, 400)
+frame.Position = UDim2.new(0, 20, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 0.4
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Visible = true -- garante visibilidade inicial
 
--- Botão flutuante (único)
-local FloatingButton = Instance.new("TextButton")
-FloatingButton.Name = "FloatingButton"
-FloatingButton.Parent = BrazucaHubGui
-FloatingButton.BackgroundColor3 = Color3.fromRGB(30,30,30)
-FloatingButton.Position = UDim2.new(0, 10, 0.5, -50)
-FloatingButton.Size = UDim2.new(0, 50, 0, 50)
-FloatingButton.Text = "BH"
-FloatingButton.TextColor3 = Color3.fromRGB(255,255,255)
-FloatingButton.TextSize = 18
-FloatingButton.Font = Enum.Font.SourceSansBold
-FloatingButton.Active = true
-FloatingButton.Draggable = true
-FloatingButton.Visible = true -- inicia visível
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "GP7 MODS"
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
 
--- Eventos de clique
-FloatingButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    FloatingButton.Visible = false
+-- Botão flutuante minimizar
+local floatBtn = Instance.new("TextButton", gui)
+floatBtn.Text = "GP7"
+floatBtn.Size = UDim2.new(0, 60, 0, 35)
+floatBtn.Position = UDim2.new(0, 10, 0, 10)
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+floatBtn.TextColor3 = Color3.new(0, 0, 0)
+floatBtn.Visible = false
+floatBtn.Font = Enum.Font.GothamBold
+floatBtn.TextScaled = true
+
+floatBtn.MouseButton1Click:Connect(function()
+    print("[GP7Menu] Abrindo menu...")
+    frame.Visible = true
+    floatBtn.Visible = false
 end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    FloatingButton.Visible = true
+-- Criar botões automáticos
+local buttonY = 50 -- espaçamento vertical
+local buttonIndex = 0
+local function createButton(text, callback)
+    local btn = Instance.new("TextButton", frame)
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, 50 + (buttonIndex * buttonY))
+    btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+    btn.TextColor3 = Color3.fromRGB(0, 255, 0)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    btn.Text = text
+    btn.BorderSizePixel = 0
+    btn.MouseButton1Click:Connect(function()
+        print("[GP7Menu] Botão clicado: " .. text)
+        callback(btn)
+    end)
+    buttonIndex += 1
+    return btn
+end
+
+-- ===== SISTEMA DE VELOCIDADE =====
+local speedMode = 0 -- 0 = normal, 1 = rápido, 2 = ultra
+local SPEEDS = {16, 32, 200}
+
+local function maintainSpeed()
+    local character = LocalPlayer.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    humanoid.WalkSpeed = SPEEDS[speedMode + 1]
+end
+RunService.Heartbeat:Connect(maintainSpeed)
+
+createButton("Velocidade: Normal", function(btn)
+    speedMode = (speedMode + 1) % 3
+    local nomes = {"Normal", "Rápida", "Ultra Rápida"}
+    btn.Text = "Velocidade: " .. nomes[speedMode + 1]
+    print("[GP7Menu] Velocidade alterada para: " .. nomes[speedMode + 1])
 end)
 
-print("GUI carregada com sucesso!")
-
--- Botão ESP
-local ESPButton = Instance.new("TextButton")
-ESPButton.Name = "ESPButton"
-ESPButton.Parent = MainFrame  -- certifique-se que MainFrame é o frame da interface
-ESPButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-ESPButton.Position = UDim2.new(0, 10, 0, 50)
-ESPButton.Size = UDim2.new(0, 280, 0, 40)
-ESPButton.Font = Enum.Font.SourceSans
-ESPButton.Text = "ESP: Desativado"
-ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ESPButton.TextSize = 16
-
--- Variáveis de controle ESP
-local ESPEnabled = false
-local espBoxes = {}
-local espNameTags = {}
-
--- Função para criar a caixa ESP ao redor do personagem
-local function createEspBoxForCharacter(character)
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return nil end
-
-    local box = Instance.new("BoxHandleAdornment")
-    box.Adornee = rootPart
-    box.AlwaysOnTop = true
-    box.ZIndex = 10
-    box.Size = Vector3.new(3, 6, 1)  -- aumentei o tamanho da caixa
-    box.Transparency = 0.5
-    box.Color3 = Color3.new(0, 1, 0) -- verde
-    box.Parent = rootPart
-
-    return box
-end
-
--- Função para criar o nome flutuante acima da cabeça
-local function createNameTagForCharacter(character, playerName)
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return nil end
-
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Adornee = rootPart
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Size = UDim2.new(0, 100, 0, 40)
-    billboardGui.StudsOffset = Vector3.new(0, 3.5, 0) -- posiciona acima da cabeça
-    billboardGui.Parent = rootPart
-
-    local textLabel = Instance.new("TextLabel")
-    textLabel.BackgroundTransparency = 1
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    textLabel.Text = playerName
-    textLabel.TextColor3 = Color3.new(0, 1, 0) -- verde
-    textLabel.TextStrokeTransparency = 0
-    textLabel.TextScaled = true
-    textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.Parent = billboardGui
-
-    return billboardGui
-end
-
--- Função para remover todas as caixas e nomes ESP
-local function removeAllEsp()
-    for _, box in pairs(espBoxes) do
-        if box and box.Parent then
-            box:Destroy()
+-- ===== INFINITE JUMP =====
+local infiniteJumpOn = false
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpOn then
+        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
-    espBoxes = {}
+end)
 
-    for _, tag in pairs(espNameTags) do
-        if tag and tag.Parent then
-            tag:Destroy()
-        end
-    end
-    espNameTags = {}
-end
+createButton("Pulo Infinito OFF", function(btn)
+    infiniteJumpOn = not infiniteJumpOn
+    btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
+    print("[GP7Menu] Pulo Infinito: " .. (infiniteJumpOn and "ON" or "OFF"))
+end)
 
-ESPButton.MouseButton1Click:Connect(function()
-    ESPEnabled = not ESPEnabled
+-- ===== TELEPORTE =====
+local savedPosition = nil
 
-    if ESPEnabled then
-        ESPButton.Text = "ESP: Ativado"
-        -- Criar caixas e nomes para jogadores (exceto local)
-        for _, plr in pairs(game.Players:GetPlayers()) do
-            if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                espBoxes[plr.Name] = createEspBoxForCharacter(plr.Character)
-                espNameTags[plr.Name] = createNameTagForCharacter(plr.Character, plr.Name)
-            end
-        end
-
-        -- Atualiza ao adicionar novos jogadores
-        game.Players.PlayerAdded:Connect(function(plr)
-            plr.CharacterAdded:Connect(function(char)
-                if ESPEnabled and char:FindFirstChild("HumanoidRootPart") then
-                    espBoxes[plr.Name] = createEspBoxForCharacter(char)
-                    espNameTags[plr.Name] = createNameTagForCharacter(char, plr.Name)
-                end
-            end)
-        end)
-
-        -- Remove ao sair do jogo
-        game.Players.PlayerRemoving:Connect(function(plr)
-            if espBoxes[plr.Name] then
-                espBoxes[plr.Name]:Destroy()
-                espBoxes[plr.Name] = nil
-            end
-            if espNameTags[plr.Name] then
-                espNameTags[plr.Name]:Destroy()
-                espNameTags[plr.Name] = nil
-            end
-        end)
-
+createButton("Salvar Posição", function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        savedPosition = char.HumanoidRootPart.Position
+        print("[Teleport] Posição salva:", savedPosition)
     else
-        ESPButton.Text = "ESP: Desativado"
-        removeAllEsp()
+        print("[Teleport] Personagem não encontrado para salvar posição.")
     end
 end)
+
+createButton("Teleportar", function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
+        char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
+        print("[Teleport] Teleportado para posição salva!")
+    else
+        print("[Teleport] Nenhuma posição salva para teleportar!")
+    end
+end)
+
+-- ===== NOCLIP =====
+local noclipOn = false
+RunService.Stepped:Connect(function()
+    if noclipOn and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+createButton("Noclip OFF", function(btn)
+    noclipOn = not noclipOn
+    btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
+    print("[GP7Menu] Noclip: " .. (noclipOn and "ON" or "OFF"))
+end)
+
+-- ===== MINIMIZAR =====
+createButton("Minimizar", function()
+    frame.Visible = false
+    floatBtn.Visible = true
+    print("[GP7Menu] Menu minimizado")
+end)
+
+print("[GP7Menu] Script carregado com sucesso!")
