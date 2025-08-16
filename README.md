@@ -1,191 +1,107 @@
--- SISTEMA DE KEY
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+-- Criar GUI
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+gui.Name = "GP7Menu"
+gui.ResetOnSpawn = false
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 300, 0, 150)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.Parent = ScreenGui
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 160, 0, 40)
+button.Position = UDim2.new(0.05, 0, 0.25, 0)
+button.Text = "Speed Hack OFF"
+button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 18
+button.Parent = gui
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "Digite a Key para acessar"
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextScaled = true
-Title.Parent = Frame
+-- Estado
+local speedOn = false
+local loopSpam
 
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(1, -20, 0, 40)
-TextBox.Position = UDim2.new(0, 10, 0, 50)
-TextBox.PlaceholderText = "Digite a Key..."
-TextBox.Text = ""
-TextBox.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.Font = Enum.Font.Gotham
-TextBox.TextScaled = true
-TextBox.Parent = Frame
+-- Função de pegar/auto comprar o gancho
+local function getGancho()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local gancho = backpack:FindFirstChild("Gancho De Aperto") or Character:FindFirstChild("Gancho De Aperto")
 
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(1, -20, 0, 40)
-Button.Position = UDim2.new(0, 10, 0, 100)
-Button.Text = "Confirmar"
-Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-Button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-Button.Font = Enum.Font.GothamBold
-Button.TextScaled = true
-Button.Parent = Frame
+    if not gancho then
+        -- tenta comprar (ajuste o RemoteEvent se o jogo usar outro nome!)
+        local remote = ReplicatedStorage:FindFirstChild("BuyItem") or ReplicatedStorage:FindFirstChild("Remotes"):FindFirstChild("BuyItem")
+        if remote then
+            remote:FireServer("Gancho De Aperto") -- 🔴 pode ser "Gancho de Aperto", "GrappleHook" etc, depende do jogo
+        end
+        task.wait(1)
+        gancho = backpack:FindFirstChild("Gancho De Aperto") or Character:FindFirstChild("Gancho De Aperto")
+    end
 
-Button.MouseButton1Click:Connect(function()
-if TextBox.Text == "GGG" then
-ScreenGui:Destroy()
-
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()  
-    local Window = Rayfield:CreateWindow({  
-        Name = "Brazuca God",  
-        LoadingTitle = "Carregando...",  
-        LoadingSubtitle = "By GP7",  
-        ConfigurationSaving = {  
-            Enabled = false  
-        }  
-    })  
-
-    local Tab = Window:CreateTab("Funções", 4483362458)  
-
-    -- Variáveis globais  
-    local speedOn = false  
-    local speedRageOn = false  
-    local infiniteJumpOn = false  
-    local noclipOn = false  
-    local savedPosition = nil  
-
-    -- Função que mantém o WalkSpeed de acordo com o toggle
-
-game:GetService("RunService").Heartbeat:Connect(function()
-local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-if humanoid then
-if speedRageOn then
-humanoid.WalkSpeed = 200
-elseif speedOn then
-humanoid.WalkSpeed = 32
-else
-humanoid.WalkSpeed = 16
-end
-end
-end)
-
-local function setSpeedToggle(normalValue, rageValue)
-speedOn = normalValue
-speedRageOn = rageValue
-
--- Atualiza visualmente os toggles  
-Tab:SetToggle("SpeedHackToggle", normalValue)  
-Tab:SetToggle("SpeedHackRageToggle", rageValue)
-
+    return gancho
 end
 
--- SPEED HACK NORMAL
-Tab:CreateToggle({
-Name = "Speed Hack",
-CurrentValue = false,
-Flag = "SpeedHackToggle",
-Callback = function(value)
-if value then
-setSpeedToggle(true, false)
-else
-setSpeedToggle(false, false)
-end
-end,
-})
+-- Função de ativar/desativar
+local function toggleSpeed()
+    speedOn = not speedOn
+    if speedOn then
+        button.Text = "Speed Hack ON"
+        button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 
--- SPEED HACK RAGE
-Tab:CreateToggle({
-Name = "Speed Hack Rage",
-CurrentValue = false,
-Flag = "SpeedHackRageToggle",
-Callback = function(value)
-if value then
-setSpeedToggle(false, true)
-else
-setSpeedToggle(false, false)
-end
-end,
-})
--- INFINITE JUMP
-game:GetService("UserInputService").JumpRequest:Connect(function()
-if infiniteJumpOn then
-local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-if humanoid then
-humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-end
-end
-end)
+        -- Atualiza humanoid
+        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        Humanoid = Character:WaitForChild("Humanoid")
 
-Tab:CreateToggle({  
-        Name = "Infinite Jump",  
-        CurrentValue = false,  
-        Flag = "InfiniteJumpToggle",  
-        Callback = function(value)  
-            infiniteJumpOn = value  
-        end,  
-    })  
+        -- Muda velocidade
+        Humanoid.WalkSpeed = 150
 
-    -- NOCLIP  
-    game:GetService("RunService").Stepped:Connect(function()  
-        if LocalPlayer.Character then  
-            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do  
-                if part:IsA("BasePart") then  
-                    part.CanCollide = not noclipOn  
-                end  
-            end  
-        end  
-    end)  
+        -- Pega/compra o gancho
+        local tool = getGancho()
+        if tool then
+            tool.Parent = Character
+        end
 
-    Tab:CreateToggle({  
-        Name = "No Clip",  
-        CurrentValue = false,  
-        Flag = "NoClipToggle",  
-        Callback = function(value)  
-            noclipOn = value  
-        end,  
-    })  
+        -- Spamma o clique
+        loopSpam = RunService.Heartbeat:Connect(function()
+            pcall(function()
+                local tool = Character:FindFirstChild("Gancho De Aperto")
+                if tool then
+                    tool:Activate()
+                end
+            end)
+        end)
 
-    -- SALVAR POSIÇÃO
+    else
+        button.Text = "Speed Hack OFF"
+        button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 
-Tab:CreateButton({
-Name = "Salvar Posição",
-Callback = function()
-local char = LocalPlayer.Character
-if char and char:FindFirstChild("HumanoidRootPart") then
-savedPosition = char.HumanoidRootPart.Position
-showNotification("Posição Salva com Sucesso!")
-end
-end
-})
+        -- Reseta velocidade
+        Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        Humanoid = Character:WaitForChild("Humanoid")
+        Humanoid.WalkSpeed = 16
 
--- TELEPORTAR
-Tab:CreateButton({
-Name = "Teleportar",
-Callback = function()
-local char = LocalPlayer.Character
-if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
-char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-showNotification("Teleportando...")
-end
-end
-})
-
-else  
-    Button.Text = "Key incorreta!"  
-    Button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)  
-    task.wait(1.5)  
-    Button.Text = "Confirmar"  
-    Button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)  
+        -- Para spam
+        if loopSpam then
+            loopSpam:Disconnect()
+            loopSpam = nil
+        end
+    end
 end
 
+button.MouseButton1Click:Connect(toggleSpeed)
+
+-- Garante que ao morrer/respawnar o hack continua se estiver ligado
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    Humanoid = char:WaitForChild("Humanoid")
+    if speedOn then
+        Humanoid.WalkSpeed = 150
+        local tool = getGancho()
+        if tool then
+            tool.Parent = Character
+        end
+    end
 end)
