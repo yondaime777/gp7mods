@@ -19,7 +19,7 @@ frame.BackgroundTransparency = 0.4
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
-frame.Visible = true -- garante visibilidade inicial
+frame.Visible = true
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
@@ -41,13 +41,12 @@ floatBtn.Font = Enum.Font.GothamBold
 floatBtn.TextScaled = true
 
 floatBtn.MouseButton1Click:Connect(function()
-    print("[GP7Menu] Abrindo menu...")
     frame.Visible = true
     floatBtn.Visible = false
 end)
 
 -- Criar botões automáticos
-local buttonY = 50 -- espaçamento vertical
+local buttonY = 50
 local buttonIndex = 0
 local function createButton(text, callback)
     local btn = Instance.new("TextButton", frame)
@@ -60,7 +59,6 @@ local function createButton(text, callback)
     btn.Text = text
     btn.BorderSizePixel = 0
     btn.MouseButton1Click:Connect(function()
-        print("[GP7Menu] Botão clicado: " .. text)
         callback(btn)
     end)
     buttonIndex += 1
@@ -68,7 +66,7 @@ local function createButton(text, callback)
 end
 
 -- ===== SISTEMA DE VELOCIDADE =====
-local speedMode = 0 -- 0 = normal, 1 = rápido, 2 = ultra
+local speedMode = 0 -- 0 = normal, 1 = rápida, 2 = ultra
 local SPEEDS = {16, 32, 200}
 
 local function maintainSpeed()
@@ -76,6 +74,8 @@ local function maintainSpeed()
     if not character then return end
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
+
+    -- Força velocidade correta
     humanoid.WalkSpeed = SPEEDS[speedMode + 1]
 end
 RunService.Heartbeat:Connect(maintainSpeed)
@@ -84,7 +84,6 @@ createButton("Velocidade: Normal", function(btn)
     speedMode = (speedMode + 1) % 3
     local nomes = {"Normal", "Rápida", "Ultra Rápida"}
     btn.Text = "Velocidade: " .. nomes[speedMode + 1]
-    print("[GP7Menu] Velocidade alterada para: " .. nomes[speedMode + 1])
 end)
 
 -- ===== INFINITE JUMP =====
@@ -101,7 +100,6 @@ end)
 createButton("Pulo Infinito OFF", function(btn)
     infiniteJumpOn = not infiniteJumpOn
     btn.Text = infiniteJumpOn and "Pulo Infinito ON" or "Pulo Infinito OFF"
-    print("[GP7Menu] Pulo Infinito: " .. (infiniteJumpOn and "ON" or "OFF"))
 end)
 
 -- ===== TELEPORTE =====
@@ -111,9 +109,6 @@ createButton("Salvar Posição", function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         savedPosition = char.HumanoidRootPart.Position
-        print("[Teleport] Posição salva:", savedPosition)
-    else
-        print("[Teleport] Personagem não encontrado para salvar posição.")
     end
 end)
 
@@ -121,23 +116,16 @@ createButton("Teleportar", function()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") and savedPosition then
         char.HumanoidRootPart.CFrame = CFrame.new(savedPosition)
-        print("[Teleport] Teleportado para posição salva!")
-    else
-        print("[Teleport] Nenhuma posição salva para teleportar!")
     end
 end)
 
 -- ===== NOCLIP =====
 local noclipOn = false
 RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
+    if LocalPlayer.Character and noclipOn then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if noclipOn then
-                    part.CanCollide = false
-                else
-                    part.CanCollide = true
-                end
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.CanCollide = false
             end
         end
     end
@@ -146,14 +134,12 @@ end)
 createButton("Noclip OFF", function(btn)
     noclipOn = not noclipOn
     btn.Text = noclipOn and "Noclip ON" or "Noclip OFF"
-    print("[GP7Menu] Noclip: " .. (noclipOn and "ON" or "OFF"))
 end)
 
 -- ===== MINIMIZAR =====
 createButton("Minimizar", function()
     frame.Visible = false
     floatBtn.Visible = true
-    print("[GP7Menu] Menu minimizado")
 end)
 
 print("[GP7Menu] Script carregado com sucesso!")
