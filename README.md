@@ -79,7 +79,7 @@ sliderBar.Position = UDim2.new(0,0,0.5,-5)
 sliderBar.BackgroundColor3 = Color3.fromRGB(0,255,0)
 
 local sliderHandle = Instance.new("TextButton", sliderBar)
-sliderHandle.Size = UDim2.new(0,20,2,0)
+sliderHandle.Size = UDim2.new(0,20,1,0) -- altura igual ao sliderBar
 sliderHandle.Position = UDim2.new(0,0,0,0)
 sliderHandle.BackgroundColor3 = Color3.fromRGB(255,0,0)
 sliderHandle.Text = ""
@@ -96,25 +96,23 @@ speedLabel.Text = "Speed: 16"
 
 -- Atualiza velocidade em tempo real
 local function updateSpeed()
-local barPos = sliderHandle.Position.X.Offset
-local barSize = sliderBar.AbsoluteSize.X - sliderHandle.AbsoluteSize.X
-local scale = math.clamp(barPos / barSize,0,1)
-local speed = math.floor(16 + scale * (200-16))
-speedLabel.Text = "Speed: "..speed
+    local handlePos = sliderHandle.Position.X.Offset
+    local barSize = sliderBar.AbsoluteSize.X - sliderHandle.AbsoluteSize.X
+    local scale = math.clamp(handlePos / barSize,0,1)
+    local speed = math.floor(16 + scale * (200-16))
+    speedLabel.Text = "Speed: "..speed
 
-local char = LocalPlayer.Character
-if char then
-local humanoid = char:FindFirstChildOfClass("Humanoid")
-if humanoid then
-humanoid.WalkSpeed = speed
-end
-end
-
+    local char = LocalPlayer.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = speed
+        end
+    end
 end
 
 sliderHandle:GetPropertyChangedSignal("Position"):Connect(updateSpeed)
 RunService.RenderStepped:Connect(updateSpeed)
-
 
 -- ===== INFINITE JUMP =====
 local infiniteJumpOn = false
