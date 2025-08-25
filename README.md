@@ -10,6 +10,46 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
 
+-- Reconectar Humanoid e RootPart após respawn
+local function updateCharacter()
+    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    Humanoid = Character:WaitForChild("Humanoid")
+    RootPart = Character:WaitForChild("HumanoidRootPart")
+end
+
+-- Sempre que o personagem for recriado, atualizar referências
+LocalPlayer.CharacterAdded:Connect(function()
+    updateCharacter()
+end)
+
+-- No clip persistente
+RunService.Stepped:Connect(function()
+    if noClipEnabled and Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- Pulo infinito persistente
+UserInputService.JumpRequest:Connect(function()
+    if infJumpEnabled and Humanoid then
+        Humanoid:ChangeState("Jumping")
+    end
+end)
+
+-- Speed hack persistente (mantém valor atual)
+RunService.RenderStepped:Connect(function()
+    if Humanoid and tonumber(speedBox.Text) then
+        local value = tonumber(speedBox.Text)
+        if value >= 16 and value <= 200 then
+            Humanoid.WalkSpeed = value
+        end
+    end
+end)
+
 -- Variáveis de controle
 local noClipEnabled = false
 local infJumpEnabled = false
