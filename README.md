@@ -131,10 +131,11 @@ noClipBtn.MouseButton1Click:Connect(function()
 end)
 
 RunService.Stepped:Connect(function()
-    if noClipEnabled and Character then
+    Character = LocalPlayer.Character
+    if Character then
         for _, part in pairs(Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = false
+                part.CanCollide = noClipEnabled
             end
         end
     end
