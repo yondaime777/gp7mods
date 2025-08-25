@@ -1,3 +1,4 @@
+local UserInputService = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
@@ -13,6 +14,7 @@ local noclipButton = Instance.new("TextButton")
 local saveButton = Instance.new("TextButton")
 local teleportButton = Instance.new("TextButton")
 
+-- Configurações da interface
 screenGui.Parent = player.PlayerGui
 frame.Parent = screenGui
 frame.Size = UDim2.new(0.3, 0, 0.5, 0)
@@ -64,10 +66,11 @@ teleportButton.Text = "Teleporte"
 -- Variáveis para controle
 local savedPosition
 local noclipEnabled = false
-local originalJumpPower = character.Humanoid.JumpPower
+local originalJumpPower = character:WaitForChild("Humanoid").JumpPower
 
 -- Funções
-local function minimize()
+local function minimize```lua
+()
 	frame.Visible = not frame.Visible
 end
 
@@ -90,13 +93,13 @@ end
 local function toggleNoClip()
 	noclipEnabled = not noclipEnabled
 	while noclipEnabled do
-		wait
-		()
+		wait()
 		for _, obj in pairs(character:GetDescendants()) do
 			if obj:IsA("BasePart") then
 				obj.CanCollide = false
 			end
 		end
+		wait(0.1)
 	end
 	for _, obj in pairs(character:GetDescendants()) do
 		if obj:IsA("BasePart") then
@@ -117,7 +120,7 @@ end
 
 -- Atualiza a velocidade com base na posição do slider
 speedSliderButton.MouseButton1Drag:Connect(function()
-	local mouseX = game:GetService("UserInputService"):GetMouseLocation().X
+	local mouseX = UserInputService:GetMouseLocation().X
 	local sliderX = speedSliderFrame.AbsolutePosition.X
 	local sliderWidth = speedSliderFrame.AbsoluteSize.X
 	local relativePosition = (mouseX - sliderX) / sliderWidth
