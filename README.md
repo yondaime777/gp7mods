@@ -114,31 +114,39 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP =====
+-- ===== NO CLIP (terceiro) =====
 local noClipBtn = createButton("No Clip: OFF", 110)
 noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
     noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
-    
-    -- Restaurar colisão se desativado
-    if not noClipEnabled and Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
 end)
 
-RunService.Stepped:Connect(function()
-    Character = LocalPlayer.Character
+-- Função para aplicar ou remover No Clip
+local function applyNoClip()
     if Character then
         for _, part in pairs(Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = noClipEnabled
+                if noClipEnabled then
+                    part.CanCollide = false
+                else
+                    part.CanCollide = true
+                end
             end
         end
     end
+end
+
+-- Atualizar No Clip constantemente
+RunService.Stepped:Connect(function()
+    applyNoClip()
+end)
+
+-- Atualizar No Clip após respawn
+LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    Humanoid = char:WaitForChild("Humanoid")
+    RootPart = char:WaitForChild("HumanoidRootPart")
+    applyNoClip()
 end)
 
 -- ===== SALVAR POSIÇÃO =====
