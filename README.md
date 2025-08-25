@@ -115,6 +115,16 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 -- ===== NO CLIP CORRETO =====
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+
+local noClipEnabled = false
+
+-- Botão do menu
 local noClipBtn = createButton("No Clip: OFF", 110)
 noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
@@ -125,7 +135,8 @@ end)
 local function applyNoClip()
     if Character then
         for _, part in pairs(Character:GetChildren()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            if part:IsA("BasePart") then
+                -- HumanoidRootPart pode continuar com colisão para manter controle
                 part.CanCollide = not noClipEnabled
             end
         end
@@ -134,9 +145,7 @@ end
 
 -- Atualizar No Clip a cada frame
 RunService.Stepped:Connect(function()
-    if Character then
-        applyNoClip()
-    end
+    applyNoClip()
 end)
 
 -- Reaplicar após respawn
