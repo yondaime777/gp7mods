@@ -1,101 +1,116 @@
-local Player = game.Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+-- GP7 MENU - Interface Fluent UI Verde e Preto
+-- Mantendo todas as funções originais
 
--- Criar ScreenGui
-local screenGui = Instance.new("ScreenGui", PlayerGui)
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- Criar o menu principal
-local menuFrame = Instance.new("Frame", screenGui)
-menuFrame.Size = UDim2.new(0.3, 0, 0.45, 0)
-menuFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+
+-- Variáveis de controle
+local noClipEnabled = false
+local infJumpEnabled = false
+local savedPosition = nil
+
+-- Criar GUI principal
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+gui.Name = "GP7Menu"
+gui.ResetOnSpawn = false
+
+-- Botão flutuante arrastável
+local floatButton = Instance.new("TextButton", gui)
+floatButton.Size = UDim2.new(0, 80, 0, 30)
+floatButton.Position = UDim2.new(0, 100, 0, 100)
+floatButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+floatButton.TextColor3 = Color3.new(1, 1, 1)
+floatButton.Text = "GP7 MENU"
+floatButton.AutoButtonColor = true
+floatButton.Active = true
+floatButton.Draggable = true
+
+-- Menu principal
+local menuFrame = Instance.new("Frame", gui)
+menuFrame.Size = UDim2.new(0, 220, 0, 250)
+menuFrame.Position = UDim2.new(0, 100, 0, 140)
 menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-menuFrame.Visible = true
+menuFrame.Visible = false
 
--- Botão de Minimizar
-local minimizeButton = Instance.new("TextButton", menuFrame)
-minimizeButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-minimizeButton.Position = UDim2.new(0.35, 0, 0, 0)
-minimizeButton.Text = "Minimizar"
-minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+local uiCorner = Instance.new("UICorner", menuFrame)
+uiCorner.CornerRadius = UDim.new(0, 12)
 
--- Bolinha flutuante (quando minimiza)
-local floatBall = Instance.new("TextButton", screenGui)
-floatBall.Size = UDim2.new(0, 50, 0, 50)
-floatBall.Position = UDim2.new(0.9, 0, 0.1, 0)
-floatBall.Text = "☰"
-floatBall.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-floatBall.Visible = false
-
--- Minimizar e restaurar
-minimizeButton.MouseButton1Click:Connect(function()
-    menuFrame.Visible = false
-    floatBall.Visible = true
+-- Botão para abrir/fechar menu
+floatButton.MouseButton1Click:Connect(function()
+    menuFrame.Visible = not menuFrame.Visible
 end)
 
-floatBall.MouseButton1Click:Connect(function()
-    menuFrame.Visible = true
-    floatBall.Visible = false
-end)
+-- Função para criar botões padrão
+local function createButton(name, posY)
+    local button = Instance.new("TextButton", menuFrame)
+    button.Size = UDim2.new(0, 200, 0, 30)
+    button.Position = UDim2.new(0, 10, 0, posY)
+    button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Text = name
+    button.AutoButtonColor = true
+    local corner = Instance.new("UICorner", button)
+    corner.CornerRadius = UDim.new(0, 8)
+    return button
+end
 
--- Caixa de entrada para velocidade
-local speedTextBox = Instance.new("TextBox", menuFrame)
-speedTextBox.Size = UDim2.new(0.3, 0, 0.1, 0)
-speedTextBox.Position = UDim2.new(0.35, 0, 0.15, 0)
-speedTextBox.PlaceholderText = "Velocidade (16-200)"
-speedTextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+-- Speed com TextBox
+local speedLabel = Instance.new("TextLabel", menuFrame)
+speedLabel.Size = UDim2.new(0, 200, 0, 20)
+speedLabel.Position = UDim2.new(0, 10, 0, 170)
+speedLabel.BackgroundTransparency = 1
+speedLabel.Text = "Velocidade (16 - 200)"
+speedLabel.TextColor3 = Color3.new(1, 1, 1)
 
--- Botão para atualizar a velocidade
-local setSpeedButton = Instance.new("TextButton", menuFrame)
-setSpeedButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-setSpeedButton.Position = UDim2.new(0.35, 0, 0.28, 0)
-setSpeedButton.Text = "Definir Velocidade"
-setSpeedButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+local speedBox = Instance.new("TextBox", menuFrame)
+speedBox.Size = UDim2.new(0, 200, 0, 30)
+speedBox.Position = UDim2.new(0, 10, 0, 190)
+speedBox.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+speedBox.TextColor3 = Color3.new(1, 1, 1)
+speedBox.PlaceholderText = "Digite a velocidade"
+speedBox.Text = ""
 
-setSpeedButton.MouseButton1Click:Connect(function()
-    local speed = tonumber(speedTextBox.Text)
-    if speed and speed >= 16 and speed <= 200 then
-        Player.Character.Humanoid.WalkSpeed = speed
-    else
-        warn("Por favor, insira um valor entre 16 e 200.")
+speedBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local value = tonumber(speedBox.Text)
+        if value and value >= 16 and value <= 200 then
+            Humanoid.WalkSpeed = value
+        else
+            speedBox.Text = "Inválido"
+        end
     end
 end)
 
--- Pulo Infinito
-local jumpInfiniteButton = Instance.new("TextButton", menuFrame)
-jumpInfiniteButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-jumpInfiniteButton.Position = UDim2.new(0.35, 0, 0.41, 0)
-jumpInfiniteButton.Text = "Ativar Pulo Infinito"
-jumpInfiniteButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
-
-local jumpInfinite = false
-jumpInfiniteButton.MouseButton1Click:Connect(function()
-    jumpInfinite = not jumpInfinite
-    jumpInfiniteButton.Text = jumpInfinite and "Desativar Pulo Infinito" or "Ativar Pulo Infinito"
+-- Pulo Infinito ON/OFF
+local infJumpBtn = createButton("Pulo Infinito: OFF", 50)
+infJumpBtn.MouseButton1Click:Connect(function()
+    infJumpEnabled = not infJumpEnabled
+    infJumpBtn.Text = "Pulo Infinito: " .. (infJumpEnabled and "ON" or "OFF")
 end)
 
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if jumpInfinite and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        Player.Character.Humanoid:ChangeState("Jumping")
+UserInputService.JumpRequest:Connect(function()
+    if infJumpEnabled and Humanoid then
+        Humanoid:ChangeState("Jumping")
     end
 end)
 
--- NoClip
-local noClipButton = Instance.new("TextButton", menuFrame)
-noClipButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-noClipButton.Position = UDim2.new(0.35, 0, 0.54, 0)
-noClipButton.Text = "Ativar NoClip"
-noClipButton.BackgroundColor3 = Color3.fromRGB(255, 128, 0)
-
-local noclip = false
-noClipButton.MouseButton1Click:Connect(function()
-    noclip = not noclip
-    noClipButton.Text = noclip and "Desativar NoClip" or "Ativar NoClip"
+-- No Clip ON/OFF
+local noClipBtn = createButton("No Clip: OFF", 10)
+noClipBtn.MouseButton1Click:Connect(function()
+    noClipEnabled = not noClipEnabled
+    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 end)
 
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and Player.Character and Player.Character:FindFirstChild("Humanoid") then
-        for _, part in pairs(Player.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then
+RunService.Stepped:Connect(function()
+    if noClipEnabled and Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
@@ -103,31 +118,17 @@ game:GetService("RunService").Stepped:Connect(function()
 end)
 
 -- Salvar Posição
-local savedPosition
-local savePosButton = Instance.new("TextButton", menuFrame)
-savePosButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-savePosButton.Position = UDim2.new(0.35, 0, 0.67, 0)
-savePosButton.Text = "Salvar Posição"
-savePosButton.BackgroundColor3 = Color3.fromRGB(128, 255, 128)
-
-savePosButton.MouseButton1Click:Connect(function()
-    if Player.Character and Player.Character.PrimaryPart then
-        savedPosition = Player.Character.PrimaryPart.CFrame
-        warn("Posição salva!")
+local savePosBtn = createButton("Salvar Posição", 90)
+savePosBtn.MouseButton1Click:Connect(function()
+    if RootPart then
+        savedPosition = RootPart.CFrame
     end
 end)
 
--- Voltar Posição
-local loadPosButton = Instance.new("TextButton", menuFrame)
-loadPosButton.Size = UDim2.new(0.3, 0, 0.1, 0)
-loadPosButton.Position = UDim2.new(0.35, 0, 0.80, 0)
-loadPosButton.Text = "Voltar Posição"
-loadPosButton.BackgroundColor3 = Color3.fromRGB(255, 255, 128)
-
-loadPosButton.MouseButton1Click:Connect(function()
-    if savedPosition and Player.Character and Player.Character.PrimaryPart then
-        Player.Character:SetPrimaryPartCFrame(savedPosition)
-    else
-        warn("Nenhuma posição salva!")
+-- Teleportar
+local teleportBtn = createButton("Teleportar", 130)
+teleportBtn.MouseButton1Click:Connect(function()
+    if RootPart and savedPosition then
+        RootPart.CFrame = savedPosition
     end
 end)
