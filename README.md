@@ -1,59 +1,33 @@
--- GP7 MENU - Interface Fluent UI Verde e Preto
--- Mantendo todas as funções originais
-
+-- GP7 MENU - Interface Fluent UI Verde e Preto (versão otimizada)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local RootPart = Character:WaitForChild("HumanoidRootPart")
-
--- Reconectar Humanoid e RootPart após respawn
-local function updateCharacter()
-    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    Humanoid = Character:WaitForChild("Humanoid")
-    RootPart = Character:WaitForChild("HumanoidRootPart")
-end
-
--- Sempre que o personagem for recriado, atualizar referências
-LocalPlayer.CharacterAdded:Connect(function()
-    updateCharacter()
-end)
-
--- No clip persistente
-RunService.Stepped:Connect(function()
-    if noClipEnabled and Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
--- Pulo infinito persistente
-UserInputService.JumpRequest:Connect(function()
-    if infJumpEnabled and Humanoid then
-        Humanoid:ChangeState("Jumping")
-    end
-end)
-
--- Speed hack persistente (mantém valor atual)
-RunService.RenderStepped:Connect(function()
-    if Humanoid and tonumber(speedBox.Text) then
-        local value = tonumber(speedBox.Text)
-        if value >= 16 and value <= 200 then
-            Humanoid.WalkSpeed = value
-        end
-    end
-end)
 
 -- Variáveis de controle
+local currentSpeed = 16
 local noClipEnabled = false
 local infJumpEnabled = false
 local savedPosition = nil
+
+-- Referências do personagem
+local function getCharacterRefs()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hum = char:WaitForChild("Humanoid")
+    local root = char:WaitForChild("HumanoidRootPart")
+    return char, hum, root
+end
+
+local Character, Humanoid, RootPart = getCharacterRefs()
+
+-- Atualizar referências após respawn e reaplicar WalkSpeed
+LocalPlayer.CharacterAdded:Connect(function()
+    Character, Humanoid, RootPart = getCharacterRefs()
+    if Humanoid then
+        Humanoid.WalkSpeed = currentSpeed
+    end
+end)
 
 -- Criar GUI principal
 local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
@@ -77,16 +51,13 @@ menuFrame.Size = UDim2.new(0, 220, 0, 250)
 menuFrame.Position = UDim2.new(0, 100, 0, 140)
 menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 menuFrame.Visible = false
+Instance.new("UICorner", menuFrame).CornerRadius = UDim.new(0, 12)
 
-local uiCorner = Instance.new("UICorner", menuFrame)
-uiCorner.CornerRadius = UDim.new(0, 12)
-
--- Botão para abrir/fechar menu
 floatButton.MouseButton1Click:Connect(function()
     menuFrame.Visible = not menuFrame.Visible
 end)
 
--- Função para criar botões padrão
+-- Função para criar botões
 local function createButton(name, posY)
     local button = Instance.new("TextButton", menuFrame)
     button.Size = UDim2.new(0, 200, 0, 30)
@@ -95,12 +66,11 @@ local function createButton(name, posY)
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Text = name
     button.AutoButtonColor = true
-    local corner = Instance.new("UICorner", button)
-    corner.CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
     return button
 end
 
--- ===== SPEED HACK (primeiro) =====
+-- ===== SPEED HACK =====
 local speedLabel = Instance.new("TextLabel", menuFrame)
 speedLabel.Size = UDim2.new(0, 200, 0, 20)
 speedLabel.Position = UDim2.new(0, 10, 0, 10)
@@ -119,14 +89,19 @@ speedBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
         local value = tonumber(speedBox.Text)
         if value and value >= 16 and value <= 200 then
-            Humanoid.WalkSpeed = value
+            currentSpeed = value
+            if Humanoid then Humanoid.WalkSpeed = currentSpeed end
         else
             speedBox.Text = "Inválido"
         end
     end
 end)
 
--- ===== PULO INFINITO (segundo) =====
+RunService.RenderStepped:Connect(function()
+    if Humanoid then Humanoid.WalkSpeed = currentSpeed end
+end)
+
+-- ===== PULO INFINITO =====
 local infJumpBtn = createButton("Pulo Infinito: OFF", 70)
 infJumpBtn.MouseButton1Click:Connect(function()
     infJumpEnabled = not infJumpEnabled
@@ -139,7 +114,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP (terceiro) =====
+-- ===== NO CLIP =====
 local noClipBtn = createButton("No Clip: OFF", 110)
 noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
@@ -156,15 +131,13 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- ===== SALVAR POSIÇÃO (quarto) =====
+-- ===== SALVAR POSIÇÃO =====
 local savePosBtn = createButton("Salvar Posição", 150)
 savePosBtn.MouseButton1Click:Connect(function()
-    if RootPart then
-        savedPosition = RootPart.CFrame
-    end
+    if RootPart then savedPosition = RootPart.CFrame end
 end)
 
--- ===== TELEPORTAR (quinto) =====
+-- ===== TELEPORTAR =====
 local teleportBtn = createButton("Teleportar", 190)
 teleportBtn.MouseButton1Click:Connect(function()
     if RootPart and savedPosition then
