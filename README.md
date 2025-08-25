@@ -60,21 +60,20 @@ local function createButton(name, posY)
     return button
 end
 
--- Speed com TextBox
+-- ===== SPEED HACK (primeiro) =====
 local speedLabel = Instance.new("TextLabel", menuFrame)
 speedLabel.Size = UDim2.new(0, 200, 0, 20)
-speedLabel.Position = UDim2.new(0, 10, 0, 170)
+speedLabel.Position = UDim2.new(0, 10, 0, 10)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "Velocidade (16 - 200)"
 speedLabel.TextColor3 = Color3.new(1, 1, 1)
 
 local speedBox = Instance.new("TextBox", menuFrame)
 speedBox.Size = UDim2.new(0, 200, 0, 30)
-speedBox.Position = UDim2.new(0, 10, 0, 190)
+speedBox.Position = UDim2.new(0, 10, 0, 30)
 speedBox.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
 speedBox.TextColor3 = Color3.new(1, 1, 1)
 speedBox.PlaceholderText = "Digite a velocidade"
-speedBox.Text = ""
 
 speedBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
@@ -87,8 +86,8 @@ speedBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- Pulo Infinito ON/OFF
-local infJumpBtn = createButton("Pulo Infinito: OFF", 50)
+-- ===== PULO INFINITO (segundo) =====
+local infJumpBtn = createButton("Pulo Infinito: OFF", 70)
 infJumpBtn.MouseButton1Click:Connect(function()
     infJumpEnabled = not infJumpEnabled
     infJumpBtn.Text = "Pulo Infinito: " .. (infJumpEnabled and "ON" or "OFF")
@@ -96,12 +95,12 @@ end)
 
 UserInputService.JumpRequest:Connect(function()
     if infJumpEnabled and Humanoid then
-        Humanoid:ChangeState("Jumping")
+        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
--- No Clip ON/OFF
-local noClipBtn = createButton("No Clip: OFF", 10)
+-- ===== NO CLIP (terceiro) =====
+local noClipBtn = createButton("No Clip: OFF", 110)
 noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
     noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
@@ -117,16 +116,16 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Salvar Posição
-local savePosBtn = createButton("Salvar Posição", 90)
+-- ===== SALVAR POSIÇÃO (quarto) =====
+local savePosBtn = createButton("Salvar Posição", 150)
 savePosBtn.MouseButton1Click:Connect(function()
     if RootPart then
         savedPosition = RootPart.CFrame
     end
 end)
 
--- Teleportar
-local teleportBtn = createButton("Teleportar", 130)
+-- ===== TELEPORTAR (quinto) =====
+local teleportBtn = createButton("Teleportar", 190)
 teleportBtn.MouseButton1Click:Connect(function()
     if RootPart and savedPosition then
         RootPart.CFrame = savedPosition
