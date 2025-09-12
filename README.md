@@ -116,67 +116,51 @@ end)
 
 -- ===== NO CLIP COM RAYCAST =====
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
 local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
 
--- Função para atualizar colisão do personagem
-local function updateCollisions(character)
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = not noClipEnabled
-        end
-    end
-end
-
--- Conecta o botão
-noClipBtn.MouseButton1Click:Connect(function(btn)
+-- Alterna NoClip
+noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
-    btn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 
-    -- Atualiza colisão imediatamente
-    local character = LocalPlayer.Character
-    if character then
-        updateCollisions(character)
-    end
-end)
-
--- Sempre que o personagem aparecer, garante que CanCollide seja ajustado
-LocalPlayer.CharacterAdded:Connect(function(char)
-    char:WaitForChild("HumanoidRootPart")
-    updateCollisions(char)
-end)
-
--- Mantém NoClip ativo enquanto estiver ligado
-RunService.Stepped:Connect(function()
-    local character = LocalPlayer.Character
-    if not character then return end
-
-    for _, part in pairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            -- Raycast para não atravessar o chão
-            local rayOrigin = part.Position
-            local rayDirection = Vector3.new(0, -3, 0)
-            local rayParams = RaycastParams.new()
-            rayParams.FilterDescendantsInstances = {character}
-            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-
-            local result = workspace:Raycast(rayOrigin, rayDirection, rayParams)
-
-            if noClipEnabled then
-                if result then
-                    part.CanCollide = true -- mantém chão
-                else
-                    part.CanCollide = false -- atravessa paredes
-                end
-            else
+    -- Se desligar, restaura colisão
+    if not noClipEnabled and Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
                 part.CanCollide = true
             end
         end
     end
 end)
+
+-- Mantém NoClip, mas não permite atravessar para baixo
+RunService.Stepped:Connect(function()
+    if not Character then return end
+    for _, part in pairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if noClipEnabled then
+                -- Mantém colisão com o chão
+                local rayOrigin = part.Position
+                local rayDirection = Vector3.new(0, -2, 0) -- baixo
+                local rayParams = RaycastParams.new()
+                rayParams.FilterDescendantsInstances = {Character}
+                rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+                local result = workspace:Raycast(rayOrigin, rayDirection, rayParams)
+
+                if result then
+                    part.CanCollide = true -- chão detectado, não atravessa
+                else
+                    part.CanCollide = false -- pode atravessar para lados e cima
+                end
+            else
+                part.CanCollide = true -- NoClip desligado
+            end
+        end
+    end
+end)
+
 -- ===== SALVAR POSIÇÃO =====
 local savePosBtn = createButton("Salvar Posição", 150)
 savePosBtn.MouseButton1Click:Connect(function()
