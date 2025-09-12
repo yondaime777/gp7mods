@@ -114,29 +114,48 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP =====
+-- ===== NO CLIP COM RAYCAST =====
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
 local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
 
-noClipBtn.MouseButton1Click:Connect(function()
+noClipBtn.MouseButton1Click:Connect(function(btn)
     noClipEnabled = not noClipEnabled
-    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
-
-    -- Se desligar, restaura colisão
-    if not noClipEnabled and Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
+    btn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 end)
 
 RunService.Stepped:Connect(function()
-    if Character then
+    if noClipEnabled and Character then
         for _, part in pairs(Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = not noClipEnabled
+                -- Raycast para verificar se há chão abaixo do personagem
+                local rayOrigin = part.Position
+                local rayDirection = Vector3.new(0, -5, 0) -- verifica 5 studs para baixo
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterDescendantsInstances = {Character}
+                raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+                local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+                
+                if result then
+                    -- Se houver chão, mantém colisão
+                    part.CanCollide = true
+                else
+                    -- Se não houver chão, desativa colisão (atravessa paredes)
+                    part.CanCollide = false
+                end
+            end
+        end
+    elseif Character then
+        -- NoClip desativado → tudo colide normalmente
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
             end
         end
     end
