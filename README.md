@@ -114,7 +114,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP COM RAYCAST =====
+-- ===== NO CLIP =====
 local RunService = game:GetService("RunService")
 local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
@@ -134,28 +134,20 @@ noClipBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Mantém NoClip, mas não permite atravessar para baixo
+-- Mantém NoClip: só atravessa para frente, trás, lados e cima
 RunService.Stepped:Connect(function()
     if not Character then return end
     for _, part in pairs(Character:GetDescendants()) do
         if part:IsA("BasePart") then
             if noClipEnabled then
-                -- Mantém colisão com o chão
-                local rayOrigin = part.Position
-                local rayDirection = Vector3.new(0, -2, 0) -- baixo
-                local rayParams = RaycastParams.new()
-                rayParams.FilterDescendantsInstances = {Character}
-                rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-
-                local result = workspace:Raycast(rayOrigin, rayDirection, rayParams)
-
-                if result then
-                    part.CanCollide = true -- chão detectado, não atravessa
+                -- Permite atravessar só lateral e cima
+                if part.Position.Y > Character.HumanoidRootPart.Position.Y - 0.5 then
+                    part.CanCollide = false
                 else
-                    part.CanCollide = false -- pode atravessar para lados e cima
+                    part.CanCollide = true -- bloqueia para baixo
                 end
             else
-                part.CanCollide = true -- NoClip desligado
+                part.CanCollide = true
             end
         end
     end
