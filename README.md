@@ -115,11 +115,9 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 -- ===== NO CLIP =====
-local RunService = game:GetService("RunService")
 local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
 
--- Alterna NoClip
 noClipBtn.MouseButton1Click:Connect(function()
     noClipEnabled = not noClipEnabled
     noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
@@ -134,20 +132,11 @@ noClipBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Mantém NoClip: só atravessa para frente, trás, lados e cima
 RunService.Stepped:Connect(function()
-    if not Character then return end
-    for _, part in pairs(Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            if noClipEnabled then
-                -- Permite atravessar só lateral e cima
-                if part.Position.Y > Character.HumanoidRootPart.Position.Y - 0.5 then
-                    part.CanCollide = false
-                else
-                    part.CanCollide = true -- bloqueia para baixo
-                end
-            else
-                part.CanCollide = true
+    if Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not noClipEnabled
             end
         end
     end
