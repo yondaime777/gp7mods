@@ -119,18 +119,31 @@ local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
 
 noClipBtn.MouseButton1Click:Connect(function()
-    noClipEnabled = not noClipEnabled
-    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+noClipEnabled = not noClipEnabled
+noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 
-    -- Se desligar, restaura colisão
-    if not noClipEnabled and Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
+-- Se desligar, restaura colisão  
+if not noClipEnabled and Character then  
+    for _, part in pairs(Character:GetDescendants()) do  
+        if part:IsA("BasePart") then  
+            part.CanCollide = true  
+        end  
+    end  
+end
+
 end)
+
+RunService.Stepped:Connect(function()
+if Character then
+for _, part in pairs(Character:GetDescendants()) do
+if part:IsA("BasePart") then
+part.CanCollide = not noClipEnabled
+end
+end
+end
+end)
+
+
 
 RunService.Stepped:Connect(function()
     if Character then
