@@ -70,7 +70,7 @@ local function createButton(name, posY)
     return button
 end
 
--- ===== SPEED HACK =====
+-- ===== VELOCIDADE =====
 local speedLabel = Instance.new("TextLabel", menuFrame)
 speedLabel.Size = UDim2.new(0, 200, 0, 20)
 speedLabel.Position = UDim2.new(0, 10, 0, 10)
