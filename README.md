@@ -1,170 +1,136 @@
--- GP7 MENU - Interface Fluent UI Verde e Preto (versão otimizada)
+-- LocalScript (colocar em StarterPlayerScripts ou PlayerGui)
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local guiParent = player:WaitForChild("PlayerGui")
 
-local LocalPlayer = Players.LocalPlayer
+-- CONFIG
+local AUTO_CLOSE_SECONDS = 12
+local typingSpeed = 0.04 -- segundos por caractere
 
--- Variáveis de controle
-local currentSpeed = 16
-local noClipEnabled = false
-local infJumpEnabled = false
-local savedPosition = nil
+-- Cria ScreenGui
+local screen = Instance.new("ScreenGui")
+screen.Name = "HackerAlertSim"
+screen.ResetOnSpawn = false
+screen.Parent = guiParent
 
--- Referências do personagem
-local function getCharacterRefs()
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local hum = char:WaitForChild("Humanoid")
-    local root = char:WaitForChild("HumanoidRootPart")
-    return char, hum, root
+-- Fundo escuro semi-transparente
+local overlay = Instance.new("Frame", screen)
+overlay.Size = UDim2.new(1,0,1,0)
+overlay.Position = UDim2.new(0,0,0,0)
+overlay.BackgroundColor3 = Color3.fromRGB(0,0,0)
+overlay.BackgroundTransparency = 0.45
+overlay.ZIndex = 1
+
+-- Painel principal
+local panel = Instance.new("Frame", screen)
+panel.Size = UDim2.new(0, 700, 0, 260)
+panel.AnchorPoint = Vector2.new(0.5,0.5)
+panel.Position = UDim2.new(0.5, 0, 0.4, 0)
+panel.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+panel.BorderSizePixel = 0
+panel.ZIndex = 2
+panel.ClipsDescendants = true
+panel.Rotation = 0
+panel.Name = "AlertPanel"
+
+-- Cabeçalho vermelho
+local header = Instance.new("Frame", panel)
+header.Size = UDim2.new(1,0,0,72)
+header.Position = UDim2.new(0,0,0,0)
+header.BackgroundColor3 = Color3.fromRGB(190, 10, 10)
+header.BorderSizePixel = 0
+
+local headerText = Instance.new("TextLabel", header)
+headerText.Size = UDim2.new(1, -20, 1, 0)
+headerText.Position = UDim2.new(0, 10, 0, 0)
+headerText.BackgroundTransparency = 1
+headerText.Text = "SEUS DISPOSITIVO ESTÁ SENDO HACKEADO, DELTA ATAQUES!!!"
+headerText.TextColor3 = Color3.fromRGB(255,255,255)
+headerText.Font = Enum.Font.GothamBlack
+headerText.TextScaled = true
+headerText.TextWrapped = true
+headerText.ZIndex = 3
+
+-- Mensagem secundária (typing)
+local body = Instance.new("TextLabel", panel)
+body.Size = UDim2.new(1, -40, 0, 110)
+body.Position = UDim2.new(0, 20, 0, 90)
+body.BackgroundTransparency = 1
+body.Text = "" -- será preenchido por typing
+body.TextColor3 = Color3.fromRGB(255,230,100)
+body.Font = Enum.Font.SourceSansBold
+body.TextScaled = true
+body.TextWrapped = true
+body.ZIndex = 3
+body.TextXAlignment = Enum.TextXAlignment.Left
+body.TextYAlignment = Enum.TextYAlignment.Top
+
+-- Fechar (X)
+local closeBtn = Instance.new("TextButton", panel)
+closeBtn.Size = UDim2.new(0, 80, 0, 36)
+closeBtn.Position = UDim2.new(1, -90, 0, 10)
+closeBtn.Text = "Fechar"
+closeBtn.Font = Enum.Font.GothamSemibold
+closeBtn.TextScaled = true
+closeBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.BorderSizePixel = 0
+closeBtn.ZIndex = 4
+
+-- Efeito de piscar do headerText
+do
+    local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+    local goal = {TextTransparency = 0.35}
+    local t = TweenService:Create(headerText, tweenInfo, goal)
+    t:Play()
 end
 
-local Character, Humanoid, RootPart = getCharacterRefs()
+-- Texto de typing que você pediu
+local targetText = "ESTHER PARE DE USAR HACK"
 
--- Atualizar referências após respawn e reaplicar WalkSpeed
-LocalPlayer.CharacterAdded:Connect(function()
-    Character, Humanoid, RootPart = getCharacterRefs()
-    if Humanoid then
-        Humanoid.WalkSpeed = currentSpeed
+-- Função typing (async)
+spawn(function()
+    body.Text = ""
+    for i = 1, #targetText do
+        body.Text = string.sub(targetText, 1, i)
+        wait(typingSpeed)
     end
 end)
 
--- Criar GUI principal
-local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-gui.Name = "GP7Menu"
-gui.ResetOnSpawn = false
-
--- Botão flutuante arrastável
-local floatButton = Instance.new("TextButton", gui)
-floatButton.Size = UDim2.new(0, 80, 0, 30)
-floatButton.Position = UDim2.new(0, 100, 0, 100)
-floatButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-floatButton.TextColor3 = Color3.new(1, 1, 1)
-floatButton.Text = "GP7 MENU"
-floatButton.AutoButtonColor = true
-floatButton.Active = true
-floatButton.Draggable = true
-
--- Menu principal
-local menuFrame = Instance.new("Frame", gui)
-menuFrame.Size = UDim2.new(0, 220, 0, 250)
-menuFrame.Position = UDim2.new(0, 100, 0, 140)
-menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-menuFrame.Visible = false
-Instance.new("UICorner", menuFrame).CornerRadius = UDim.new(0, 12)
-
-floatButton.MouseButton1Click:Connect(function()
-    menuFrame.Visible = not menuFrame.Visible
-end)
-
--- Função para criar botões
-local function createButton(name, posY)
-    local button = Instance.new("TextButton", menuFrame)
-    button.Size = UDim2.new(0, 200, 0, 30)
-    button.Position = UDim2.new(0, 10, 0, posY)
-    button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Text = name
-    button.AutoButtonColor = true
-    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
-    return button
+-- Aparecer com pequena animação
+do
+    panel.Size = UDim2.new(0, 10, 0, 4)
+    panel.Position = UDim2.new(0.5, 0, 0.35, 0)
+    local tweenIn = TweenService:Create(panel, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 700, 0, 260), Position = UDim2.new(0.5, 0, 0.4, 0)})
+    tweenIn:Play()
 end
 
--- ===== SPEED HACK =====
-local speedLabel = Instance.new("TextLabel", menuFrame)
-speedLabel.Size = UDim2.new(0, 200, 0, 20)
-speedLabel.Position = UDim2.new(0, 10, 0, 10)
-speedLabel.BackgroundTransparency = 1
-speedLabel.Text = "Velocidade (16 - 200)"
-speedLabel.TextColor3 = Color3.new(1, 1, 1)
+-- Fecha a janela (função)
+local function closeAlert()
+    if not screen then return end
+    local tweenOut = TweenService:Create(panel, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 10, 0, 4), Position = UDim2.new(0.5, 0, 0.4, 0)})
+    tweenOut:Play()
+    tweenOut.Completed:Wait()
+    screen:Destroy()
+end
 
-local speedBox = Instance.new("TextBox", menuFrame)
-speedBox.Size = UDim2.new(0, 200, 0, 30)
-speedBox.Position = UDim2.new(0, 10, 0, 30)
-speedBox.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-speedBox.TextColor3 = Color3.new(1, 1, 1)
-speedBox.PlaceholderText = "Digite a velocidade"
+closeBtn.MouseButton1Click:Connect(closeAlert)
 
-speedBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local value = tonumber(speedBox.Text)
-        if value and value >= 16 and value <= 200 then
-            currentSpeed = value
-            if Humanoid then Humanoid.WalkSpeed = currentSpeed end
-        else
-            speedBox.Text = "Inválido"
-        end
+-- Auto close
+delay(AUTO_CLOSE_SECONDS, function()
+    if screen and screen.Parent then
+        closeAlert()
     end
 end)
 
-RunService.RenderStepped:Connect(function()
-    if Humanoid then Humanoid.WalkSpeed = currentSpeed end
-end)
-
--- ===== PULO INFINITO =====
-local infJumpBtn = createButton("Pulo Infinito: OFF", 70)
-infJumpBtn.MouseButton1Click:Connect(function()
-    infJumpEnabled = not infJumpEnabled
-    infJumpBtn.Text = "Pulo Infinito: " .. (infJumpEnabled and "ON" or "OFF")
-end)
-
-UserInputService.JumpRequest:Connect(function()
-    if infJumpEnabled and Humanoid then
-        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-
--- ===== NO CLIP =====
-local noClipEnabled = false
-local noClipBtn = createButton("No Clip: OFF", 110)
-
-noClipBtn.MouseButton1Click:Connect(function()
-noClipEnabled = not noClipEnabled
-noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
-
--- Se desligar, restaura colisão  
-if not noClipEnabled and Character then  
-    for _, part in pairs(Character:GetDescendants()) do  
-        if part:IsA("BasePart") then  
-            part.CanCollide = true  
-        end  
-    end  
-end
-
-end)
-
-RunService.Stepped:Connect(function()
-if Character then
-for _, part in pairs(Character:GetDescendants()) do
-if part:IsA("BasePart") then
-part.CanCollide = not noClipEnabled
-end
-end
-end
-end)
-
-
-
-RunService.Stepped:Connect(function()
-    if Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = not noClipEnabled
-            end
-        end
-    end
-end)
-
--- ===== SALVAR POSIÇÃO =====
-local savePosBtn = createButton("Salvar Posição", 150)
-savePosBtn.MouseButton1Click:Connect(function()
-    if RootPart then savedPosition = RootPart.CFrame end
-end)
-
--- ===== TELEPORTAR =====
-local teleportBtn = createButton("Teleportar", 190)
-teleportBtn.MouseButton1Click:Connect(function()
-    if RootPart and savedPosition then
-        RootPart.CFrame = savedPosition
-    end
-end)
+-- observação visual: deixa claro que é brincadeira
+local notice = Instance.new("TextLabel", panel)
+notice.Size = UDim2.new(1, -40, 0, 36)
+notice.Position = UDim2.new(0, 20, 1, -46)
+notice.BackgroundTransparency = 1
+notice.Text = "(SIMULAÇÃO) ISSO É APENAS UMA BRINCADEIRA"
+notice.TextColor3 = Color3.fromRGB(200,200,200)
+notice.Font = Enum.Font.Gotham
+notice.TextScaled = true
+notice.ZIndex = 4
