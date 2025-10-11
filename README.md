@@ -114,7 +114,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP =====
+-- ===== ATRAVESSAR =====
 local noClipEnabled = false
 local noClipBtn = createButton("No Clip: OFF", 110)
 
