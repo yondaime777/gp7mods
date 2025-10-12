@@ -65,20 +65,17 @@ title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBlack
 title.TextScaled = true
 
--- Botão minimizar (com espaço e formato corrigido)
+-- 🔽 Botão Minimizar
 local minimizeBtn = Instance.new("TextButton", menuFrame)
-minimizeBtn.Size = UDim2.new(0, 200, 0, 30)
-minimizeBtn.Position = UDim2.new(0, 10, 0, 15) -- posição ajustada (deixa espaço)
+minimizeBtn.Size = UDim2.new(0, 100, 0, 25)
+minimizeBtn.Position = UDim2.new(0.5, -50, 1, -75)
+minimizeBtn.Text = "Minimizar"
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
-minimizeBtn.Text = "⛶ Minimizar"
-minimizeBtn.AutoButtonColor = true
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextScaled = true
 Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
 
-minimizeBtn.MouseButton1Click:Connect(function()
-	menuFrame.Visible = false
-	floatButton.Visible = true
-end)
 minimizeBtn.MouseButton1Click:Connect(function()
     menuFrame.Visible = false
     floatBtn.Visible = true
@@ -151,40 +148,39 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NO CLIP =====
+-- ===== NOCLIP REFEITO =====
 local noClipEnabled = false
-local noClipBtn = createButton("No Clip: OFF", 110)
+local noClipBtn = createButton("No Clip: OFF", 155)
 
 noClipBtn.MouseButton1Click:Connect(function()
-	noClipEnabled = not noClipEnabled
-	noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+    noClipEnabled = not noClipEnabled
+    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 
-	-- Se desligar, restaura colisão e âncoras
-	if not noClipEnabled and Character then
-		for _, part in pairs(Character:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.CanCollide = true
-				part.Anchored = false
-			end
-		end
-	end
-end)
+    local char = game.Players.LocalPlayer.Character
+    if not char then return end
 
-RunService.Stepped:Connect(function()
-	if Character then
-		for _, part in pairs(Character:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part.CanCollide = not noClipEnabled
-			end
-		end
-	end
-end)
-
-RunService.Stepped:Connect(function()
-    if Character then
-        for _, part in pairs(Character:GetDescendants()) do
+    -- quando desativar, reativa colisão normalmente
+    if not noClipEnabled then
+        for _, part in ipairs(char:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = not noClipEnabled
+                part.CanCollide = true
+            end
+        end
+    end
+end)
+
+-- sistema mais leve e preciso (não causa flutuação)
+task.spawn(function()
+    local runService = game:GetService("RunService")
+    while task.wait() do
+        if noClipEnabled then
+            local char = game.Players.LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
             end
         end
     end
