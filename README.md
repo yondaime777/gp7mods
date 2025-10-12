@@ -65,17 +65,20 @@ title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBlack
 title.TextScaled = true
 
--- 🔽 Botão Minimizar
+-- Botão minimizar (com espaço e formato corrigido)
 local minimizeBtn = Instance.new("TextButton", menuFrame)
-minimizeBtn.Size = UDim2.new(0, 100, 0, 25)
-minimizeBtn.Position = UDim2.new(0.5, -50, 1, -35)
-minimizeBtn.Text = "Minimizar"
+minimizeBtn.Size = UDim2.new(0, 200, 0, 30)
+minimizeBtn.Position = UDim2.new(0, 10, 0, 15) -- posição ajustada (deixa espaço)
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextScaled = true
+minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+minimizeBtn.Text = "⛶ Minimizar"
+minimizeBtn.AutoButtonColor = true
 Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
 
+minimizeBtn.MouseButton1Click:Connect(function()
+	menuFrame.Visible = false
+	floatButton.Visible = true
+end)
 minimizeBtn.MouseButton1Click:Connect(function()
     menuFrame.Visible = false
     floatBtn.Visible = true
@@ -148,19 +151,33 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== NOCLIP =====
-local noClipBtn = createButton("No Clip: OFF", 155)
-noClipBtn.MouseButton1Click:Connect(function()
-    noClipEnabled = not noClipEnabled
-    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+-- ===== NO CLIP =====
+local noClipEnabled = false
+local noClipBtn = createButton("No Clip: OFF", 110)
 
-    if not noClipEnabled and Character then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-    end
+noClipBtn.MouseButton1Click:Connect(function()
+	noClipEnabled = not noClipEnabled
+	noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+
+	-- Se desligar, restaura colisão e âncoras
+	if not noClipEnabled and Character then
+		for _, part in pairs(Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = true
+				part.Anchored = false
+			end
+		end
+	end
+end)
+
+RunService.Stepped:Connect(function()
+	if Character then
+		for _, part in pairs(Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = not noClipEnabled
+			end
+		end
+	end
 end)
 
 RunService.Stepped:Connect(function()
