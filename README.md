@@ -32,19 +32,6 @@ gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- 🔘 Botão flutuante circular
-local floatBtn = Instance.new("TextButton", gui)
-floatBtn.Size = UDim2.new(0, 70, 0, 70)
-floatBtn.Position = UDim2.new(0, 100, 0, 200)
-floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-floatBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-floatBtn.Text = "GP7"
-floatBtn.Font = Enum.Font.GothamBlack
-floatBtn.TextScaled = true
-floatBtn.Active = true
-floatBtn.Draggable = true
-Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1, 0)
-
 -- 🧭 Menu principal
 local menuFrame = Instance.new("Frame", gui)
 menuFrame.Size = UDim2.new(0, 240, 0, 300)
