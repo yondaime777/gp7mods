@@ -1,8 +1,7 @@
--- GP7 MENU - Interface Fluent UI Verde e Preto (versão otimizada)
+-- 🔰 GP7 MENU - Interface Bola Flutuante + Menu Arrastável
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local LocalPlayer = Players.LocalPlayer
 
 -- Variáveis de controle
@@ -20,8 +19,6 @@ local function getCharacterRefs()
 end
 
 local Character, Humanoid, RootPart = getCharacterRefs()
-
--- Atualizar referências após respawn e reaplicar WalkSpeed
 LocalPlayer.CharacterAdded:Connect(function()
     Character, Humanoid, RootPart = getCharacterRefs()
     if Humanoid then
@@ -29,61 +26,98 @@ LocalPlayer.CharacterAdded:Connect(function()
     end
 end)
 
--- Criar GUI principal
-local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+-- GUI principal
+local gui = Instance.new("ScreenGui")
 gui.Name = "GP7Menu"
 gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Botão flutuante arrastável
-local floatButton = Instance.new("TextButton", gui)
-floatButton.Size = UDim2.new(0, 80, 0, 30)
-floatButton.Position = UDim2.new(0, 100, 0, 100)
-floatButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-floatButton.TextColor3 = Color3.new(1, 1, 1)
-floatButton.Text = "GP7 MENU"
-floatButton.AutoButtonColor = true
-floatButton.Active = true
-floatButton.Draggable = true
+-- 🔘 Botão flutuante circular
+local floatBtn = Instance.new("TextButton", gui)
+floatBtn.Size = UDim2.new(0, 70, 0, 70)
+floatBtn.Position = UDim2.new(0, 100, 0, 200)
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+floatBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+floatBtn.Text = "GP7"
+floatBtn.Font = Enum.Font.GothamBlack
+floatBtn.TextScaled = true
+floatBtn.Active = true
+floatBtn.Draggable = true
+Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1, 0)
 
--- Menu principal
+-- 🧭 Menu principal
 local menuFrame = Instance.new("Frame", gui)
-menuFrame.Size = UDim2.new(0, 220, 0, 250)
-menuFrame.Position = UDim2.new(0, 100, 0, 140)
-menuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+menuFrame.Size = UDim2.new(0, 240, 0, 300)
+menuFrame.Position = UDim2.new(0, 90, 0, 180)
+menuFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+menuFrame.BorderSizePixel = 0
 menuFrame.Visible = false
-Instance.new("UICorner", menuFrame).CornerRadius = UDim.new(0, 12)
+menuFrame.Active = true
+menuFrame.Draggable = true
+Instance.new("UICorner", menuFrame).CornerRadius = UDim.new(0, 15)
 
-floatButton.MouseButton1Click:Connect(function()
-    menuFrame.Visible = not menuFrame.Visible
+-- Título
+local title = Instance.new("TextLabel", menuFrame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "🧠 GP7 MENU"
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.Font = Enum.Font.GothamBlack
+title.TextScaled = true
+
+-- 🔽 Botão Minimizar
+local minimizeBtn = Instance.new("TextButton", menuFrame)
+minimizeBtn.Size = UDim2.new(0, 100, 0, 25)
+minimizeBtn.Position = UDim2.new(0.5, -50, 1, -35)
+minimizeBtn.Text = "Minimizar"
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Font = Enum.Font.GothamBold
+minimizeBtn.TextScaled = true
+Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+    menuFrame.Visible = false
+    floatBtn.Visible = true
 end)
 
--- Função para criar botões
+floatBtn.MouseButton1Click:Connect(function()
+    menuFrame.Visible = true
+    floatBtn.Visible = false
+end)
+
+-- Função criar botões
 local function createButton(name, posY)
-    local button = Instance.new("TextButton", menuFrame)
-    button.Size = UDim2.new(0, 200, 0, 30)
-    button.Position = UDim2.new(0, 10, 0, posY)
-    button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.Text = name
-    button.AutoButtonColor = true
-    Instance.new("UICorner", button).CornerRadius = UDim.new(0, 8)
-    return button
+    local btn = Instance.new("TextButton", menuFrame)
+    btn.Size = UDim2.new(0, 210, 0, 35)
+    btn.Position = UDim2.new(0, 15, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = name
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    return btn
 end
 
--- ===== VELOCIDADE =====
+-- ===== SPEED =====
 local speedLabel = Instance.new("TextLabel", menuFrame)
-speedLabel.Size = UDim2.new(0, 200, 0, 20)
-speedLabel.Position = UDim2.new(0, 10, 0, 10)
+speedLabel.Size = UDim2.new(0, 210, 0, 20)
+speedLabel.Position = UDim2.new(0, 15, 0, 50)
 speedLabel.BackgroundTransparency = 1
 speedLabel.Text = "Velocidade (16 - 200)"
-speedLabel.TextColor3 = Color3.new(1, 1, 1)
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.Font = Enum.Font.Gotham
 
 local speedBox = Instance.new("TextBox", menuFrame)
-speedBox.Size = UDim2.new(0, 200, 0, 30)
-speedBox.Position = UDim2.new(0, 10, 0, 30)
-speedBox.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-speedBox.TextColor3 = Color3.new(1, 1, 1)
-speedBox.PlaceholderText = "Digite a velocidade"
+speedBox.Size = UDim2.new(0, 210, 0, 30)
+speedBox.Position = UDim2.new(0, 15, 0, 70)
+speedBox.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.PlaceholderText = "Digite velocidade"
+speedBox.Font = Enum.Font.GothamBold
+speedBox.TextScaled = true
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 8)
 
 speedBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
@@ -101,8 +135,8 @@ RunService.RenderStepped:Connect(function()
     if Humanoid then Humanoid.WalkSpeed = currentSpeed end
 end)
 
--- ===== PULO INFINITO =====
-local infJumpBtn = createButton("Pulo Infinito: OFF", 70)
+-- ===== INFINITE JUMP =====
+local infJumpBtn = createButton("Pulo Infinito: OFF", 110)
 infJumpBtn.MouseButton1Click:Connect(function()
     infJumpEnabled = not infJumpEnabled
     infJumpBtn.Text = "Pulo Infinito: " .. (infJumpEnabled and "ON" or "OFF")
@@ -114,36 +148,20 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ===== ATRAVESSAR =====
-local noClipEnabled = false
-local noClipBtn = createButton("No Clip: OFF", 110)
-
+-- ===== NOCLIP =====
+local noClipBtn = createButton("No Clip: OFF", 155)
 noClipBtn.MouseButton1Click:Connect(function()
-noClipEnabled = not noClipEnabled
-noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
+    noClipEnabled = not noClipEnabled
+    noClipBtn.Text = "No Clip: " .. (noClipEnabled and "ON" or "OFF")
 
--- Se desligar, restaura colisão  
-if not noClipEnabled and Character then  
-    for _, part in pairs(Character:GetDescendants()) do  
-        if part:IsA("BasePart") then  
-            part.CanCollide = true  
-        end  
-    end  
-end
-
+    if not noClipEnabled and Character then
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
 end)
-
-RunService.Stepped:Connect(function()
-if Character then
-for _, part in pairs(Character:GetDescendants()) do
-if part:IsA("BasePart") then
-part.CanCollide = not noClipEnabled
-end
-end
-end
-end)
-
-
 
 RunService.Stepped:Connect(function()
     if Character then
@@ -156,13 +174,13 @@ RunService.Stepped:Connect(function()
 end)
 
 -- ===== SALVAR POSIÇÃO =====
-local savePosBtn = createButton("Salvar Posição", 150)
+local savePosBtn = createButton("Salvar Posição", 200)
 savePosBtn.MouseButton1Click:Connect(function()
     if RootPart then savedPosition = RootPart.CFrame end
 end)
 
 -- ===== TELEPORTAR =====
-local teleportBtn = createButton("Teleportar", 190)
+local teleportBtn = createButton("Teleportar", 245)
 teleportBtn.MouseButton1Click:Connect(function()
     if RootPart and savedPosition then
         RootPart.CFrame = savedPosition
