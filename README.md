@@ -65,26 +65,26 @@ title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 title.Font = Enum.Font.GothamBlack
 title.TextScaled = true
 
--- 🔽 Botão Minimizar
-local minimizeBtn = Instance.new("TextButton", menuFrame)
-minimizeBtn.Size = UDim2.new(0, 100, 0, 25)
-minimizeBtn.Position = UDim2.new(0.5, -50, 1, -75)
-minimizeBtn.Text = "Minimizar"
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextScaled = true
-Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(0, 8)
+-- Botão flutuante sempre visível
+local floatBtn = Instance.new("TextButton", gui)
+floatBtn.Size = UDim2.new(0, 80, 0, 30)
+floatBtn.Position = UDim2.new(0, 100, 0, 100)
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+floatBtn.TextColor3 = Color3.new(1, 1, 1)
+floatBtn.Text = "GP7"
+floatBtn.Font = Enum.Font.GothamBold
+floatBtn.TextScaled = true
+floatBtn.AutoButtonColor = true
+floatBtn.Active = true
+floatBtn.Draggable = true
 
-minimizeBtn.MouseButton1Click:Connect(function()
-    menuFrame.Visible = false
-    floatBtn.Visible = true
-end)
-
+-- Abrir/Fechar menu ao clicar
 floatBtn.MouseButton1Click:Connect(function()
-    menuFrame.Visible = true
-    floatBtn.Visible = false
+    menuFrame.Visible = not menuFrame.Visible
 end)
+
+-- Remove o botão minimizar completamente
+-- menuFrame já pode ser fechado/aberto só com o floatBtn
 
 -- Função criar botões
 local function createButton(name, posY)
